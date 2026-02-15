@@ -3,6 +3,7 @@
 
 #include "pch.h"
 #include <cstdint>
+#include <charconv>
 #include <WinSock2.h>
 #include <WS2tcpip.h>
 #pragma comment(lib, "ws2_32.lib")
@@ -195,7 +196,7 @@ void addItem(SOCKET& clientSocket, ItemManager& itemManager)
 	char recvBuffer[PACKET_SIZE];
 	string msg;
 	string name;
-	int itemType;
+	int itemType = 0;
 
 	msg = "아이템의 이름을 입력해주세요.\t";
 	printAndInputFromSocket(clientSocket, msg, recvBuffer);
@@ -204,10 +205,11 @@ void addItem(SOCKET& clientSocket, ItemManager& itemManager)
 	msg = "아이템의 타입의 번호를 선택해주세요.\n";
 	msg += ItemTypeHelper::getAllItemInfoToString();
 	printAndInputFromSocket(clientSocket, msg, recvBuffer);
-	itemType = (int)recvBuffer[0] - '0'; // TODO: 이렇게 하면 안되는데.. 어카지..
 
-	itemType -= 1;
-	if (itemManager.addItem(name, static_cast<ItemType>(itemType)))
+	auto [ptr, ec] = std::from_chars(recvBuffer, recvBuffer + std::strlen(recvBuffer), itemType);
+
+	if (ec == std::errc() 
+		&& itemManager.addItem(name, static_cast<ItemType>(itemType - 1)))
 	{
 		msg = "아이템이 추가되었습니다.\n";
 		printFromSocket(clientSocket, msg);
@@ -220,23 +222,39 @@ void addItem(SOCKET& clientSocket, ItemManager& itemManager)
 
 void removeItem(SOCKET& clientSocket, ItemManager& itemManager, StockManager& stockManager)
 {
+	string msg;
+	char recvBuffer[PACKET_SIZE];
+
+	msg = "아이템의 아이디를 입력해주세요.\t";
+	printAndInputFromSocket(clientSocket, msg, recvBuffer);
+
 	unsigned int itemId;
-	cin >> itemId;
+	auto [ptr, ec] = std::from_chars(recvBuffer, recvBuffer + std::strlen(recvBuffer), itemId);
+
+	if (ec != std::errc())
+	{
+		msg = "아이디 입력이 잘못되었습니다.\n";
+		printFromSocket(clientSocket, msg);
+		return;
+	}
 
 	shared_ptr<Stock> stock = stockManager.findStockByItemId(itemId);
 	if (stock != nullptr)
 	{
-		cout << "해당 아이템은 재고가 남아있어 삭제할 수 없습니다.\n";
+		msg = "해당 아이템은 재고가 남아있어 삭제할 수 없습니다.\n";
+		printFromSocket(clientSocket, msg);
 		return;
 	}
 
 	if (itemManager.removeItem(itemId))
 	{
-		cout << itemId << "아이템이 삭제되었습니다.\n";
+		msg = std::to_string(itemId) + "아이템이 삭제되었습니다.\n";
+		printFromSocket(clientSocket, msg);
 	}
 	else
 	{
-		cout << "아이템을 삭제할 수 없습니다.\n";
+		msg = "아이템을 삭제할 수 없습니다.\n";
+		printFromSocket(clientSocket, msg);
 	}
 }
 
