@@ -266,35 +266,68 @@ void printItemList(SOCKET& clientSocket, ItemManager& itemManager)
 
 void addStock(SOCKET& clientSocket, ItemManager& itemManager, StockManager& stockManager)
 {
-	unsigned int itemId = 0; // 선
-	cout << "재고를 추가할 아이템 id를 입력해주세요.\t";
-	cin >> itemId;
+	string msg;
+	char recvBuffer[PACKET_SIZE];
+	std::from_chars_result from_char;
+
+	msg = "재고를 추가할 아이템 id를 입력해주세요.\t";
+	printAndInputFromSocket(clientSocket, msg, recvBuffer);
+
+	unsigned int itemId = 0;
+	from_char = std::from_chars(recvBuffer, recvBuffer + std::strlen(recvBuffer), itemId);
+
+	if (from_char.ec != std::errc())
+	{
+		msg = "아이디 입력이 잘못되었습니다.\n";
+		printFromSocket(clientSocket, msg);
+		return;
+	}
 
 	shared_ptr<Item> item = itemManager.findItemById(itemId);
 	if (item == nullptr)
 	{
-		cout << "아이템이 존재하지 않습니다\n";
+		msg = "아이템이 존재하지 않습니다\n";
+		printFromSocket(clientSocket, msg);
 		return;
 	}
 
+
+	msg = "재고 수를 입력해주세요.\t";
+	printAndInputFromSocket(clientSocket, msg, recvBuffer);
+
 	unsigned int count;
-	cout << "재고 수를 입력해주세요.\t";
-	cin >> count;
+	from_char = std::from_chars(recvBuffer, recvBuffer + std::strlen(recvBuffer), count);
+
+	if (from_char.ec != std::errc())
+	{
+		msg = "재고 수 입력이 잘못되었습니다.\n";
+		printFromSocket(clientSocket, msg);
+		return;
+	}
+
 	if (stockManager.addStock(itemId, count))
 	{
-		cout << "재고가 늘어났습니다.\n";
+		msg = "재고가 늘어났습니다.\n";
+		printFromSocket(clientSocket, msg);
 
 		shared_ptr<Stock> stock = stockManager.findStockByItemId(itemId);
 		if (stock == nullptr)
 		{
-			cout << "재고 조회에 실패했습니다. 다시 시도해주세요.\n";
+			msg = "재고 조회에 실패했습니다. 다시 시도해주세요.\n";
+			printFromSocket(clientSocket, msg);
 			return;
 		}
-		cout << stock->getItemId() << ": " << stock->getCount() << endl;
+
+		msg = std::to_string(stock->getItemId()) 
+			+ ": "
+			+ std::to_string(stock->getCount())
+			+ "\n";
+		printFromSocket(clientSocket, msg);
 	}
 	else
 	{
-		cout << "재고를 추가할 수 없습니다.\n";
+		msg = "재고를 추가할 수 없습니다.\n";
+		printFromSocket(clientSocket, msg);
 	}
 }
 
