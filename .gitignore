@@ -1,0 +1,32 @@
+## --- Visual Studio 관련 임시 및 빌드 파일 ---
+.vs/
+x64/
+x86/
+**/.vs/                   # IDE 개인 설정 및 디버그 캐시 (필수)
+**/[Dd]ebug/              # 디버그 빌드 결과물
+**/[Rr]elease/            # 릴리즈 빌드 결과물
+**/x64/                   # 64비트 빌드 결과물
+**/x86/                   # 32비트 빌드 결과물
+**/*.sdf                  # SQL Server 컴팩트 데이터베이스 (IntelliSense용)
+**/*.VC.db                # Visual C++ 데이터베이스 (IntelliSense용)
+**/*.VC.opendb            # Visual C++ 데이터베이스
+**/*.suo                  # 사용자 옵션 파일 (솔루션 설정)
+**/*.user                 # 사용자별 프로젝트 설정
+**/*.sln.docstates        # 솔루션 문서 상태
+
+## --- 컴파일러 생성 파일 ---
+**/*.pdb                  # 프로그램 데이터베이스 (디버그 정보)
+**/*.idb                  # 증분 빌드 데이터베이스
+**/*.ilk                  # 증분 링크 파일
+**/*.aps                  # 리소스 편집기 파일
+**/*.tlog                 # 빌드 로그 파일
+**/*.lastbuildstate       # 빌드 상태 확인 파일
+**/*.recipe               # 빌드 레시피
+
+## --- MSBuild 관련 ---
+**/bin/
+**/obj/
+**/Generated\ Files/      # 자동 생성된 코드 파일
+
+*.vcxproj.user
+*.sqlit*
