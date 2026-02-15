@@ -1,0 +1,24 @@
+#pragma once
+
+using namespace std;
+
+// count가 0이면 stock이 없어짐.
+// 만약 item이 없어도 stock이 유지된다면 -> 외상으로 나중에 들어오면 증가 시킨다던가? 이런게 아니면 count 음수일 필요가 없음. 
+class Stock {
+public:
+	Stock(const unsigned int itemId, const unsigned int count);
+	virtual ~Stock() = default;
+private:
+	//static은 보통 다 대문자
+	static constexpr unsigned int COUNT_MAX = 4000000000;
+	unsigned int _itemId;
+	unsigned int _count;
+
+public:
+	const unsigned int getItemId() const;
+	const unsigned int getCount() const;
+	bool increaseCount(const unsigned int count);
+	bool decreaseCount(const unsigned int count);
+
+	bool isValid() const;
+};
