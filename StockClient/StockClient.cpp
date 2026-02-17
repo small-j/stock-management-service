@@ -55,7 +55,7 @@ int main()
 			std::cout << dataPart << std::endl;
 		}
 
-		if (method == PRINT_AND_INPUT_METHOD) {
+		if (method == INPUT_METHOD || method == PRINT_AND_INPUT_METHOD) {
 			std::string input;
 			std::cin >> input;
 
