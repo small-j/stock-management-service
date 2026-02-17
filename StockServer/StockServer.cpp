@@ -18,6 +18,10 @@ using namespace std;
 #define PORT 4578
 #define PACKET_SIZE 1024
 
+#define REQ_COMMAND_SIZE 2
+#define RES_STATUS_SIZE 2
+#define RES_MESSAGE_SIZE 90
+
 int8_t DESTROY_CONNECTION_METHOD = -1;
 int8_t PRINT_METHOD = 1;
 int8_t INPUT_METHOD = 2;
@@ -26,9 +30,10 @@ int8_t PRINT_AND_INPUT_METHOD = 3;
 void ErrorHandler(const string& errMsg);
 void run(SOCKET& clientSocket);
 void printAndInputFromSocket(SOCKET clientSocket, string msg, char* recvBuffer);
-void printFromSocket(SOCKET& clientSocket, string msg);
-void printMenu(SOCKET& clientSocket);
-bool execute(SOCKET& clientSocket, int8_t command, ItemManager& itemManager, StockManager& stockManager);
+void printFromSocket(SOCKET& clientSocket, short status, string& msg, string& data);
+
+bool execute(SOCKET& clientSocket, short command, ItemManager& itemManager, StockManager& stockManager);
+
 void addItem(SOCKET& clientSocket, ItemManager& itemManager);
 void removeItem(SOCKET& clientSocket, ItemManager& itemManager, StockManager& stockManager);
 void printItemList(SOCKET& clientSocket, ItemManager& itemManager);
@@ -96,14 +101,12 @@ void run(SOCKET& clientSocket) {
 	ItemManager itemManager;
 	StockManager stockManager;
 
-	printMenu(clientSocket);
+	//printMenu(clientSocket);
 
-	//int command; // 만약 이 형태 그대로 배포가 되면 int를 절대 바꿀 수 없음.
-
-	//while (recv(clientSocket, buffer, PACKET_SIZE, 0) > 0)
 	while (INT32 res = recv(clientSocket, buffer, PACKET_SIZE, 0))
 	{
-		int8_t command = (int8_t)buffer[0] - '0';
+		short command;
+		memcpy(&command, buffer, sizeof(REQ_COMMAND_SIZE));
 
 		if (!execute(clientSocket, command, itemManager, stockManager))
 		{
@@ -115,7 +118,7 @@ void run(SOCKET& clientSocket) {
 			break;
 		}
 
-		printMenu(clientSocket);
+		//printMenu(clientSocket);
 	}
 }
 
@@ -130,44 +133,17 @@ void printAndInputFromSocket(SOCKET clientSocket, string msg, char* recvBuffer)
 	recv(clientSocket, recvBuffer, PACKET_SIZE, 0);
 }
 
-void printFromSocket(SOCKET& clientSocket, string msg)
+void printFromSocket(SOCKET& clientSocket, short status, std::string& msg, std::string& data)
 {
 	char sendBuffer[PACKET_SIZE];
 	memset(sendBuffer, '\0', PACKET_SIZE);
-	memcpy(sendBuffer, &PRINT_METHOD, sizeof(int8_t));
-	memcpy(sendBuffer + sizeof(int8_t), msg.c_str(), msg.length());
-	send(clientSocket, sendBuffer, sizeof(sendBuffer), 0);
+	memcpy(sendBuffer, &status, RES_STATUS_SIZE);
+	memcpy(sendBuffer + RES_STATUS_SIZE, msg.c_str(), msg.length());
+	memcpy(sendBuffer + RES_STATUS_SIZE + RES_MESSAGE_SIZE, data.c_str(), data.length());
+	send(clientSocket, sendBuffer, PACKET_SIZE, 0);
 }
 
-void printMenu(SOCKET& clientSocket)
-{
-	string msg;
-	
-	msg += "1. 아이템 추가\n";
-	msg += "2. 아이템 삭제\n";
-	msg += "3. 아이템 목록 조회\n";
-	msg += "4. 재고 추가\n";
-	msg += "5. 재고 삭제\n";
-	msg += "그 외. 종료\n";
-
-
-	char sendBuffer[PACKET_SIZE]; // 첫번쨰부터 마지막까지 이 값으로 초기화 됨.
-	// 초기화해야하는 이유 : 
-	//memset로 패킷나머지 사이즈만큼 채워준다? null
-	memset(sendBuffer, '\0', PACKET_SIZE);
-	memcpy(sendBuffer, &PRINT_AND_INPUT_METHOD, sizeof(int8_t));
-	memcpy(sendBuffer + sizeof(int8_t), msg.c_str(), msg.length());
-
-	send(clientSocket, sendBuffer, sizeof(sendBuffer), 0);
-
-	// 2차때 만들 기능
-	// 4. 재고 csv 입력
-	// 5. 아이템 삭제 -> 남은 재고는 우짜지?
-	// 재고 입, 출고 기록 저장
-	// 재고 주문 기록
-}
-
-bool execute(SOCKET& clientSocket, int8_t command, ItemManager& itemManager, StockManager& stockManager)
+bool execute(SOCKET& clientSocket, short command, ItemManager& itemManager, StockManager& stockManager)
 {
 	switch (command)
 	{
@@ -262,6 +238,8 @@ void printItemList(SOCKET& clientSocket, ItemManager& itemManager)
 {
 	std::string itemListStr = itemManager.itemListToString();
 	printFromSocket(clientSocket, itemListStr);
+	std::string msg = "success";
+	printFromSocket(clientSocket, 1, msg, itemListStr);
 }
 
 void addStock(SOCKET& clientSocket, ItemManager& itemManager, StockManager& stockManager)
