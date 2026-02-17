@@ -308,17 +308,16 @@ void addStock(SOCKET& clientSocket, ItemManager& itemManager, StockManager& stoc
 	if (stockManager.addStock(itemId, count))
 	{
 		msg = "재고가 늘어났습니다.\n";
-		printFromSocket(clientSocket, msg);
 
 		shared_ptr<Stock> stock = stockManager.findStockByItemId(itemId);
 		if (stock == nullptr)
 		{
-			msg = "재고 조회에 실패했습니다. 다시 시도해주세요.\n";
+			msg += "재고 조회에 실패했습니다. 다시 시도해주세요.\n";
 			printFromSocket(clientSocket, msg);
 			return;
 		}
 
-		msg = std::to_string(stock->getItemId()) 
+		msg += std::to_string(stock->getItemId()) 
 			+ ": "
 			+ std::to_string(stock->getCount())
 			+ "\n";
@@ -333,27 +332,52 @@ void addStock(SOCKET& clientSocket, ItemManager& itemManager, StockManager& stoc
 
 void reduceStock(SOCKET& clientSocket, StockManager& stockManager)
 {
-	unsigned int itemId;
-	unsigned int count;
-	cout << "재고를 삭제할 아이템 id를 입력해주세요.\t";
-	cin >> itemId;
+	string msg;
+	char recvBuffer[PACKET_SIZE];
+	std::from_chars_result from_char;
 
-	// item id 체크
-	cout << "삭제할 재고 수를 입력해주세요.\t";
-	cin >> count;
+	msg = "재고를 줄일 아이템 id를 입력해주세요.\t";
+	printAndInputFromSocket(clientSocket, msg, recvBuffer);
+
+	unsigned int itemId = 0;
+	from_char = std::from_chars(recvBuffer, recvBuffer + std::strlen(recvBuffer), itemId);
+
+	if (from_char.ec != std::errc())
+	{
+		msg = "아이디 입력이 잘못되었습니다.\n";
+		printFromSocket(clientSocket, msg);
+		return;
+	}
+
+
+	msg = "삭제할 재고 수를 입력해주세요.\t";
+	printAndInputFromSocket(clientSocket, msg, recvBuffer);
+
+	unsigned int count;
+	from_char = std::from_chars(recvBuffer, recvBuffer + std::strlen(recvBuffer), count);
+
+	if (from_char.ec != std::errc())
+	{
+		msg = "재고 수 입력이 잘못되었습니다.\n";
+		printFromSocket(clientSocket, msg);
+		return;
+	}
 
 	if (stockManager.reduceStock(itemId, count))
 	{
-		cout << "재고가 삭제되었습니다.\n";
+		msg = "재고가 삭제되었습니다.\n";
 		if (shared_ptr<Stock> stock = stockManager.findStockByItemId(itemId)) {
-			cout << stock->getItemId() << "재고 수 : " << stock->getCount();
+			msg += std::to_string(stock->getItemId()) + "재고 수 : " + std::to_string(stock->getCount());
+			printFromSocket(clientSocket, msg);
 		}
 		else {
-			cout << "재고 조회에 실패했습니다. 다시 시도해주세요.\n";
+			msg += "재고 조회에 실패했습니다. 다시 시도해주세요.\n";
+			printFromSocket(clientSocket, msg);
 		}
 	}
 	else
 	{
-		cout << "재고 삭제에 실패했습니다.\n";
+		msg = "재고 삭제에 실패했습니다.\n";
+		printFromSocket(clientSocket, msg);
 	}
 }
