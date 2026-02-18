@@ -3,7 +3,7 @@
 #include "Item.h"
 
 Stock::Stock(const unsigned int itemId, const unsigned int count)
-: _itemId(itemId), _count(count) {} // 음수를 막을 수가 없는데요?
+: _itemId(itemId), _count(count) {}
 
 const unsigned int Stock::getItemId() const {
 	return _itemId;
