@@ -2,6 +2,7 @@
 #include <iostream>
 #include <winsock.h>
 #include <charconv>
+#include <limits>
 
 #pragma comment(lib, "ws2_32.lib")
 
@@ -31,6 +32,9 @@ void removeItem(SOCKET& serverSocket);
 void printItemList(SOCKET& serverSocket);
 void addStock(SOCKET& serverSocket);
 void reduceStock(SOCKET& serverSocket);
+
+bool isValidItemId(int itemId);
+bool isValidStockCount(long long count);
 
 int main()
 {
@@ -93,10 +97,10 @@ bool execute(SOCKET& serverSocket, short command)
 	case 3:
 		printItemList(serverSocket);
 		return true;
-	/*case 4:
+	case 4:
 		addStock(serverSocket);
 		return true;
-	case 5:
+	/*case 5:
 		reduceStock(serverSocket);
 		return true;*/
 	default:
@@ -181,7 +185,7 @@ void addItem(SOCKET& serverSocket)
 
 void removeItem(SOCKET& serverSocket)
 {
-	char sendBuffer[PACKET_SIZE] = {};
+	char sendBuffer[PACKET_SIZE];
 	char recvBuffer[PACKET_SIZE];
 	short resStatus = 0;
 	std::string resMessage;
@@ -192,7 +196,7 @@ void removeItem(SOCKET& serverSocket)
 	std::cout << "아이템의 아이디를 입력해주세요.\t";
 	std::cin >> itemId;
 
-	if (itemId < 0 && 10000 <= itemId) {
+	if (isValidItemId(itemId) == false) {
 		std::cout << "아이템 아이디가 올바르지 않습니다.\n";
 		return;
 	}
@@ -248,28 +252,67 @@ void printItemList(SOCKET& serverSocket)
 		std::cout << resMessage;
 }
 
-//void addStock(SOCKET& serverSocket)
-//{
-//	string msg;
-//	char recvBuffer[PACKET_SIZE];
-//	std::from_chars_result from_char;
-//
-//	msg = "재고를 추가할 아이템 id를 입력해주세요.\t";
-//	printAndInputFromSocket(clientSocket, msg, recvBuffer);
-//
-//	unsigned int itemId = 0;
-//	from_char = std::from_chars(recvBuffer, recvBuffer + std::strlen(recvBuffer), itemId);
-//
-//	if (from_char.ec != std::errc())
-//	{
-//		msg = "아이디 입력이 잘못되었습니다.\n";
-//		printFromSocket(clientSocket, msg);
-//		return;
-//	}
-//
-//
-//}
-//
+void addStock(SOCKET& serverSocket)
+{
+	char sendBuffer[PACKET_SIZE];
+	char recvBuffer[PACKET_SIZE];
+	short resStatus = 0;
+	std::string resMessage;
+	memset(sendBuffer, '\0', PACKET_SIZE);
+	memset(recvBuffer, '\0', PACKET_SIZE);
+
+	int itemId;
+	std::cout << "재고를 추가할 아이템 id를 입력해주세요.\t";
+	std::cin >> itemId;
+
+	long long count;
+	std::cout << "재고 수를 입력해주세요.\t";
+	std::cin >> count;
+
+	if (isValidItemId(itemId) == false) {
+		std::cout << "아이템 아이디가 올바르지 않습니다.\n";
+		return;
+	}
+	if (isValidStockCount(count) == false) {
+		std::cout << "아이템 아이디가 올바르지 않습니다.\n";
+		return;
+	}
+
+	unsigned int castItemId = static_cast<unsigned int>(itemId);
+	unsigned int castCount = static_cast<unsigned int>(count);
+
+	int offset = 0;
+	short command = 4;
+
+	memcpy(sendBuffer + offset, &command, REQ_COMMAND_SIZE);
+	offset += REQ_COMMAND_SIZE;
+
+	memcpy(sendBuffer + offset, &castItemId, sizeof(castItemId));
+	offset += sizeof(castItemId);
+
+	memcpy(sendBuffer + offset, &castCount, sizeof(castCount));
+
+	send(serverSocket, sendBuffer, PACKET_SIZE, 0);
+
+	// 결과 수신
+	recv(serverSocket, recvBuffer, PACKET_SIZE, 0);
+
+	offset = 0;
+
+	memcpy(&resStatus, recvBuffer + offset, RES_STATUS_SIZE);
+	offset += RES_STATUS_SIZE;
+
+	resMessage.assign(recvBuffer + offset, RES_MESSAGE_SIZE);
+	offset += RES_MESSAGE_SIZE;
+
+	std::string data(recvBuffer + offset);
+
+	if (resStatus == 1)
+		std::cout << data;
+	else
+		std::cout << resMessage;
+}
+
 //void reduceStock(SOCKET& serverSocket)
 //{
 //	long long itemId;
@@ -288,3 +331,13 @@ void printItemList(SOCKET& serverSocket)
 //		// 재고 수 마이너스 체크
 //	// send
 //}
+
+bool isValidItemId(int itemId)
+{
+	return 0 < itemId && itemId < 10000;
+}
+
+bool isValidStockCount(long long count)
+{
+	return 0 < count && count < (std::numeric_limits<unsigned int>::max)();
+}
