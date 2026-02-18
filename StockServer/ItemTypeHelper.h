@@ -37,4 +37,9 @@ public:
         *result = enumToString[type];
         return result->empty() != true;
     }
+
+    static bool isValid(ItemType type) {
+        if (type <= ItemType::UNKNOWN || ItemType::COUNT <= type) return false;
+        return true;
+    }
 };

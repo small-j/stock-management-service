@@ -1,6 +1,7 @@
 ﻿
 #include <iostream>
 #include <winsock.h>
+#include <charconv>
 
 #pragma comment(lib, "ws2_32.lib")
 
@@ -83,10 +84,10 @@ bool execute(SOCKET& serverSocket, short command)
 {
 	switch (command)
 	{
-	/*case 1:
+	case 1:
 		addItem(serverSocket);
 		return true;
-	case 2:
+	/*case 2:
 		removeItem(serverSocket);
 		return true;*/
 	case 3:
@@ -103,24 +104,81 @@ bool execute(SOCKET& serverSocket, short command)
 	}
 }
 
-//void addItem(SOCKET& serverSocket)
-//{
-//	char recvBuffer[PACKET_SIZE];
-//	string msg;
-//	string name;
-//	int itemType = 0;
-//
-//	msg = "아이템의 이름을 입력해주세요.\t";
-//	printAndInputFromSocket(clientSocket, msg, recvBuffer);
-//	name = string(recvBuffer);
-//
-//	msg = "아이템의 타입의 번호를 선택해주세요.\n";
-//	msg += ItemTypeHelper::getAllItemInfoToString();
-//	printAndInputFromSocket(clientSocket, msg, recvBuffer);
-//
-//
-//}
-//
+void addItem(SOCKET& serverSocket)
+{
+	char sendBuffer[PACKET_SIZE] = {};
+	char recvBuffer[PACKET_SIZE] = {};
+	short resStatus = 0;
+	short command = -1;
+	std::string resMessage;
+
+	memset(sendBuffer, '\0', PACKET_SIZE);
+	memset(recvBuffer, '\0', PACKET_SIZE);
+
+	// send + recv 아이템 타입 정보 서버로부터 수신.
+	command = 6;
+	memcpy(sendBuffer, &command, REQ_COMMAND_SIZE);
+	send(serverSocket, sendBuffer, PACKET_SIZE, 0);
+	recv(serverSocket, recvBuffer, PACKET_SIZE, 0);
+
+	memcpy(&resStatus, recvBuffer, RES_STATUS_SIZE);
+	resMessage.assign(recvBuffer + RES_STATUS_SIZE, RES_MESSAGE_SIZE);
+	std::string itemTypeStr(recvBuffer + RES_STATUS_SIZE + RES_MESSAGE_SIZE);
+
+	if (resStatus != 1) {
+		std::cout << "아이템 타입을 가져오는데 실패했습니다. 다시 시도해주세요.";
+	}
+
+	// 필요한 데이터 입력 받기
+	std::string name;
+	int itemType = 0;
+	std::cout << "아이템의 이름을 입력해주세요.\t";
+	std::cin >> name;
+	std::cout << "아이템의 타입의 번호를 선택해주세요.\n";
+	std::cout << itemTypeStr;
+	std::cin >> itemType;
+
+	int nameLen = static_cast<int>(name.length());
+	int offset = 0;
+
+	// send + recv
+	memset(sendBuffer, '\0', PACKET_SIZE);
+	memset(recvBuffer, '\0', PACKET_SIZE);
+
+	command = 1;
+	
+	memcpy(sendBuffer + offset, &command, sizeof(command));
+	offset += REQ_COMMAND_SIZE;
+
+	memcpy(sendBuffer + offset, &nameLen, sizeof(nameLen)); // name 길이 먼저 기록
+	offset += sizeof(nameLen);
+
+	memcpy(sendBuffer + offset, name.c_str(), nameLen); // name 기록
+	offset += nameLen;
+
+	memcpy(sendBuffer + offset, &itemType, sizeof(itemType)); // itemType 기록
+
+	send(serverSocket, sendBuffer, PACKET_SIZE, 0);
+	
+	// 결과 수신
+	recv(serverSocket, recvBuffer, PACKET_SIZE, 0);
+
+	offset = 0;
+
+	memcpy(&resStatus, recvBuffer + offset, RES_STATUS_SIZE);
+	offset += RES_STATUS_SIZE;
+	
+	resMessage.assign(recvBuffer + offset, RES_MESSAGE_SIZE);
+	offset += RES_MESSAGE_SIZE;
+	
+	std::string data(recvBuffer + offset);
+
+	if (resStatus == 1)
+		std::cout << data;
+	else
+		std::cout << resMessage;
+}
+
 //void removeItem(SOCKET& serverSocket)
 //{
 //	string msg;

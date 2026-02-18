@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "ItemManager.h"
 #include "Item.h"
+#include "ItemTypeHelper.h"
 
 const unsigned int ItemManager::publishItemId() {
 	for (int idx = 1; idx < 10000; ++idx) {
@@ -15,6 +16,9 @@ const unsigned int ItemManager::publishItemId() {
 
 // item 동적할당. 여기서 아이디 발급 실패시 예외처리.
 bool ItemManager::addItem(const string& name, const ItemType& type) {
+	if (name.length() == 0) return false;
+	if (ItemTypeHelper::isValid(type) == false) return false;
+
 	unsigned int id = publishItemId();
 	if (id == Item::INVALID_ID) return false;
 
