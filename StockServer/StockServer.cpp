@@ -11,6 +11,7 @@
 #include "ItemTypeHelper.h"
 #include "ItemManager.h"
 #include "StockManager.h"
+#include "Item.h"
 #include "Stock.h" // Stock의 정의가 필요하므로 추가
 
 using namespace std;
@@ -35,7 +36,7 @@ void printFromSocket(SOCKET& clientSocket, short status, string& msg, std::optio
 bool execute(SOCKET& clientSocket, short command, ItemManager& itemManager, StockManager& stockManager, const char* dataPtr);
 
 void addItem(SOCKET& clientSocket, ItemManager& itemManager, const char* dataPtr);
-void removeItem(SOCKET& clientSocket, ItemManager& itemManager, StockManager& stockManager);
+void removeItem(SOCKET& clientSocket, ItemManager& itemManager, StockManager& stockManager, const char* dataPtr);
 void printItemList(SOCKET& clientSocket, ItemManager& itemManager);
 void addStock(SOCKET& clientSocket, ItemManager& itemManager, StockManager& stockManager);
 void reduceStock(SOCKET& clientSocket, StockManager& stockManager);
@@ -164,7 +165,7 @@ bool execute(SOCKET& clientSocket, short command, ItemManager& itemManager, Stoc
 		addItem(clientSocket, itemManager, dataPtr);
 		return true;
 	case 2:
-		removeItem(clientSocket, itemManager, stockManager);
+		removeItem(clientSocket, itemManager, stockManager, dataPtr);
 		return true;
 	case 3:
 		printItemList(clientSocket, itemManager);
@@ -208,48 +209,35 @@ void addItem(SOCKET& clientSocket, ItemManager& itemManager, const char* dataPtr
 	printFromSocket(clientSocket, 0, msg);
 }
 
-void removeItem(SOCKET& clientSocket, ItemManager& itemManager, StockManager& stockManager)
+void removeItem(SOCKET& clientSocket, ItemManager& itemManager, StockManager& stockManager, const char* dataPtr)
 {
-	string msg;
-	char recvBuffer[PACKET_SIZE];
-
-	msg = "아이템의 아이디를 입력해주세요.\t";
-	printAndInputFromSocket(clientSocket, msg, recvBuffer);
-
-	unsigned int itemId;
-	auto [ptr, ec] = std::from_chars(recvBuffer, recvBuffer + std::strlen(recvBuffer), itemId);
-
-	if (ec != std::errc())
-	{
-		msg = "아이디 입력이 잘못되었습니다.\n";
-		printFromSocket(clientSocket, msg);
-		return;
-	}
-
+	unsigned int itemId = Item::INVALID_ID;
+	memcpy(&itemId, dataPtr, sizeof(itemId));
+	
+	std::string msg;
 	shared_ptr<Stock> stock = stockManager.findStockByItemId(itemId);
 	if (stock != nullptr)
 	{
 		msg = "해당 아이템은 재고가 남아있어 삭제할 수 없습니다.\n";
-		printFromSocket(clientSocket, msg);
+		printFromSocket(clientSocket, 0, msg);
 		return;
 	}
 
 	if (itemManager.removeItem(itemId))
 	{
 		msg = std::to_string(itemId) + "아이템이 삭제되었습니다.\n";
-		printFromSocket(clientSocket, msg);
+		printFromSocket(clientSocket, 1, msg);
 	}
 	else
 	{
 		msg = "아이템을 삭제할 수 없습니다.\n";
-		printFromSocket(clientSocket, msg);
+		printFromSocket(clientSocket, 0, msg);
 	}
 }
 
 void printItemList(SOCKET& clientSocket, ItemManager& itemManager)
 {
 	std::string itemListStr = itemManager.itemListToString();
-	printFromSocket(clientSocket, itemListStr);
 	std::string msg = "success";
 	printFromSocket(clientSocket, 1, msg, itemListStr);
 }

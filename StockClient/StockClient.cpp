@@ -87,9 +87,9 @@ bool execute(SOCKET& serverSocket, short command)
 	case 1:
 		addItem(serverSocket);
 		return true;
-	/*case 2:
+	case 2:
 		removeItem(serverSocket);
-		return true;*/
+		return true;
 	case 3:
 		printItemList(serverSocket);
 		return true;
@@ -179,26 +179,53 @@ void addItem(SOCKET& serverSocket)
 		std::cout << resMessage;
 }
 
-//void removeItem(SOCKET& serverSocket)
-//{
-//	string msg;
-//	char recvBuffer[PACKET_SIZE];
-//
-//	msg = "아이템의 아이디를 입력해주세요.\t";
-//	printAndInputFromSocket(clientSocket, msg, recvBuffer);
-//
-//	unsigned int itemId;
-//	auto [ptr, ec] = std::from_chars(recvBuffer, recvBuffer + std::strlen(recvBuffer), itemId);
-//
-//	if (ec != std::errc())
-//	{
-//		msg = "아이디 입력이 잘못되었습니다.\n";
-//		printFromSocket(clientSocket, msg);
-//		return;
-//	}
-//
-//}
+void removeItem(SOCKET& serverSocket)
+{
+	char sendBuffer[PACKET_SIZE] = {};
+	char recvBuffer[PACKET_SIZE];
+	short resStatus = 0;
+	std::string resMessage;
+	memset(sendBuffer, '\0', PACKET_SIZE);
+	memset(recvBuffer, '\0', PACKET_SIZE);
 
+	int itemId;
+	std::cout << "아이템의 아이디를 입력해주세요.\t";
+	std::cin >> itemId;
+
+	if (itemId < 0 && 10000 <= itemId) {
+		std::cout << "아이템 아이디가 올바르지 않습니다.\n";
+		return;
+	}
+
+	int offset = 0;
+	short command = 2;
+	unsigned int castItemId = static_cast<unsigned int>(itemId);
+
+	memcpy(sendBuffer + offset, &command, REQ_COMMAND_SIZE);
+	offset += REQ_COMMAND_SIZE;
+
+	memcpy(sendBuffer + offset, &castItemId, sizeof(castItemId));
+
+	send(serverSocket, sendBuffer, PACKET_SIZE, 0);
+
+	// 결과 수신
+	recv(serverSocket, recvBuffer, PACKET_SIZE, 0);
+
+	offset = 0;
+
+	memcpy(&resStatus, recvBuffer + offset, RES_STATUS_SIZE);
+	offset += RES_STATUS_SIZE;
+
+	resMessage.assign(recvBuffer + offset, RES_MESSAGE_SIZE);
+	offset += RES_MESSAGE_SIZE;
+
+	std::string data(recvBuffer + offset);
+
+	if (resStatus == 1)
+		std::cout << data;
+	else
+		std::cout << resMessage;
+}
 
 void printItemList(SOCKET& serverSocket)
 {
