@@ -18,5 +18,19 @@
     <ClCompile Include="StockClient.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
+    <ClCompile Include="AddItemRequest.h">
+      <Filter>헤더 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="RemoveItemRequest.h">
+      <Filter>헤더 파일</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="BaseRequest.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="RequestCommand.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
