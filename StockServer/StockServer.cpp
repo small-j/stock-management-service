@@ -32,7 +32,6 @@ int8_t PRINT_AND_INPUT_METHOD = 3;
 
 void ErrorHandler(const string& errMsg);
 void run(SOCKET& clientSocket);
-void printAndInputFromSocket(SOCKET clientSocket, string msg, char* recvBuffer);
 void printFromSocket(SOCKET& clientSocket, short status, string& msg, std::optional<std::string_view> data);
 
 bool execute(SOCKET& clientSocket, short command, ItemManager& itemManager, StockManager& stockManager, const char* dataPtr);
@@ -126,17 +125,6 @@ void run(SOCKET& clientSocket) {
 
 		//printMenu(clientSocket);
 	}
-}
-
-void printAndInputFromSocket(SOCKET clientSocket, string msg, char* recvBuffer)
-{
-	char sendBuffer[PACKET_SIZE];
-
-	memset(sendBuffer, '\0', PACKET_SIZE);
-	memcpy(sendBuffer, &PRINT_AND_INPUT_METHOD, sizeof(int8_t));
-	memcpy(sendBuffer + sizeof(int8_t), msg.c_str(), msg.length());
-	send(clientSocket, sendBuffer, sizeof(sendBuffer), 0);
-	recv(clientSocket, recvBuffer, PACKET_SIZE, 0);
 }
 
 void printFromSocket(SOCKET& clientSocket, short status, std::string& msg, std::optional<std::string_view> data = std::nullopt)
