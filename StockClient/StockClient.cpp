@@ -3,6 +3,31 @@
 #include <winsock.h>
 #include <charconv>
 #include <limits>
+#include "DataManager.h"
+#include "PrintItemRequest.h"
+#include "PrintItemResponse.h"
+
+// request, response 클래스 추가
+// base에는 커맨드 종류
+// 가지치기를 어떻게 할까
+// 각각의 기능 별로 별도의 클래스가 될수도 있고
+// 기능별로 묶어서 처리할 수도 있음.
+// base랑 sub req, res 가 분리되면
+// 확장성이 높다
+// 후에 modify가 추가되면 
+// 1 add item, print item
+//main request commnad, sub request command
+//미리 add, edit, delete, -> 메소드 넣어놓고
+//base request의 command
+//이걸 상속받는 item의 request 클래스
+//
+//base request -> item request: add, edit, delete, print
+//base reuqest는 커맨드 종류만 구현.(넘버링만) 실제로는 하위 request에서 동작 구현함.
+//아이템을 구별할 수 
+//command 가 공통으로 쓰일 수 있음.
+//
+//어떤 동작을 해주세요. 명령 동작()
+
 
 #pragma comment(lib, "ws2_32.lib")
 
@@ -18,18 +43,16 @@
 // method -> 1byte
 // method -1 -> destroy connection
 // method 1 -> print data
-// method 2 -> input data
-// method 3 -> print and input data
 // 
 // data -> 1023byte
 // method에서 지정된 형태의 데이터가 들어가있다
 
 void printMenu();
-bool execute(SOCKET& serverSocket, short command);
+bool execute(SOCKET& serverSocket, short command, DataManager dataManager);
 
 void addItem(SOCKET& serverSocket);
 void removeItem(SOCKET& serverSocket);
-void printItemList(SOCKET& serverSocket);
+void printItemList(SOCKET& serverSocket, DataManager dataManager);
 void addStock(SOCKET& serverSocket);
 void reduceStock(SOCKET& serverSocket);
 
@@ -52,14 +75,17 @@ int main()
 
 	connect(hSocket, (SOCKADDR*)&serverAddr, sizeof(serverAddr));
 
+	DataManager dataManager;
+	
 	while (1)
 	{
 		printMenu();
 
 		short command;
-		std::cin >> command;	
+		std::cin >> command;
 
-		if (!execute(hSocket, command)) break;
+
+		if (!execute(hSocket, command, dataManager)) break;
 	}
 
 	closesocket(hSocket);
@@ -68,23 +94,7 @@ int main()
 	return 0;
 }
 
-void printMenu()
-{
-	std::cout << "1. 아이템 추가\n";
-	std::cout << "2. 아이템 삭제\n";
-	std::cout << "3. 아이템 목록 조회\n";
-	std::cout << "4. 재고 추가\n";
-	std::cout << "5. 재고 삭제\n";
-	std::cout << "그 외. 종료\n";
-
-	// 2차때 만들 기능
-	// 4. 재고 csv 입력
-	// 5. 아이템 삭제 -> 남은 재고는 우짜지?
-	// 재고 입, 출고 기록 저장
-	// 재고 주문 기록
-}
-
-bool execute(SOCKET& serverSocket, short command)
+bool execute(SOCKET& serverSocket, short command, DataManager dataManager)
 {
 	switch (command)
 	{
@@ -95,7 +105,7 @@ bool execute(SOCKET& serverSocket, short command)
 		removeItem(serverSocket);
 		return true;
 	case 3:
-		printItemList(serverSocket);
+		printItemList(serverSocket, dataManager);
 		return true;
 	case 4:
 		addStock(serverSocket);
@@ -231,25 +241,37 @@ void removeItem(SOCKET& serverSocket)
 		std::cout << resMessage;
 }
 
-void printItemList(SOCKET& serverSocket)
+//void printItemList(SOCKET& serverSocket)
+//{
+//	char buffer[PACKET_SIZE] = {};
+//	short command = 3;
+//	memcpy(buffer, &command, REQ_COMMAND_SIZE);
+//	send(serverSocket, buffer, PACKET_SIZE, 0);
+//
+//	char recvBuffer[PACKET_SIZE];
+//	recv(serverSocket, recvBuffer, PACKET_SIZE, 0);
+//	
+//	short resStatus;
+//	memcpy(&resStatus, recvBuffer, RES_STATUS_SIZE);
+//	std::string resMessage(recvBuffer + RES_STATUS_SIZE, RES_MESSAGE_SIZE);
+//	std::string data(recvBuffer + RES_STATUS_SIZE + RES_MESSAGE_SIZE);
+//
+//	if (resStatus == 1)
+//		std::cout << data;
+//	else
+//		std::cout << resMessage;
+//}
+
+void printItemList(SOCKET& serverSocket, DataManager dataManager)
 {
-	char buffer[PACKET_SIZE] = {};
-	short command = 3;
-	memcpy(buffer, &command, REQ_COMMAND_SIZE);
-	send(serverSocket, buffer, PACKET_SIZE, 0);
-
-	char recvBuffer[PACKET_SIZE];
-	recv(serverSocket, recvBuffer, PACKET_SIZE, 0);
+	PrintItemRequest req;
+	PrintItemResponse res;
+	dataManager.sendToServer(serverSocket, req, res);
 	
-	short resStatus;
-	memcpy(&resStatus, recvBuffer, RES_STATUS_SIZE);
-	std::string resMessage(recvBuffer + RES_STATUS_SIZE, RES_MESSAGE_SIZE);
-	std::string data(recvBuffer + RES_STATUS_SIZE + RES_MESSAGE_SIZE);
-
-	if (resStatus == 1)
-		std::cout << data;
+	if (res.getStatus() == 1)
+		std::cout << res.getItemList();
 	else
-		std::cout << resMessage;
+		std::cout << res.getMessage();
 }
 
 void addStock(SOCKET& serverSocket)
