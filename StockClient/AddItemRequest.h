@@ -1,12 +1,13 @@
 #pragma once
-#include <iostream>
 #include "RequestCommand.h"
 #include "BaseRequest.h"
 
+class BaseRequest;
+
 class AddItemRequest : public BaseRequest {
 public:
-	AddItemRequest(std::string& name, int itemType)
-		:BaseRequest(RequestCommand::ADD_ITEM)
+	AddItemRequest(const std::string& name, const int itemType)
+		:BaseRequest(Request::Command::ADD_ITEM)
 		, _name(name)
 		, _itemType(itemType) {
 	}
@@ -14,4 +15,8 @@ public:
 private:
 	std::string _name;
 	int _itemType;
+
+public:
+	int serialize(char* buffer) override;
+	int deserialize(const char* buffer) override;
 };
