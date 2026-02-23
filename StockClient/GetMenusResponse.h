@@ -1,7 +1,6 @@
 #pragma once
 #include "BaseResponse.h"
 #include <vector>
-#include <sstream>
 
 class GetMenusResponse : public BaseResponse {
 public:
