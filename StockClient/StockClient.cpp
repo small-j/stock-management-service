@@ -14,6 +14,8 @@
 #include "AddItemResponse.h"
 #include "AddStockRequest.h"
 #include "AddStockResponse.h"
+#include "ReduceStockRequest.h"
+#include "ReduceStockResponse.h"
 
 // request, response 클래스 추가
 // base에는 커맨드 종류
@@ -84,6 +86,7 @@ int main()
 	connect(hSocket, (SOCKADDR*)&serverAddr, sizeof(serverAddr));
 
 	DataManager dataManager;
+	// TODO: menu 한번만 가져와서 계속 출력해주도록 변경?
 	
 	while (1)
 	{
@@ -102,6 +105,7 @@ int main()
 	return 0;
 }
 
+// menu목록을 받아서 어떻게 아래 메소드들을 연결할지 고민이다.
 bool execute(SOCKET& serverSocket, short command, DataManager dataManager)
 {
 	switch (command)
@@ -251,21 +255,14 @@ void addStock(SOCKET& serverSocket, DataManager dataManager)
 	unsigned int castItemId = static_cast<unsigned int>(itemId);
 	unsigned int castCount = static_cast<unsigned int>(count);
 
-	AddStockRequest req(itemId, count);
+	AddStockRequest req(castItemId, castCount);
 	AddStockResponse res;
 	dataManager.sendToServer(serverSocket, req, res);
 	std::cout << res.getMessage();
 }
 
-void reduceStock(SOCKET& serverSocket)
+void reduceStock(SOCKET& serverSocket, DataManager dataManager)
 {
-	char sendBuffer[PACKET_SIZE];
-	char recvBuffer[PACKET_SIZE];
-	short resStatus = 0;
-	std::string resMessage;
-	memset(sendBuffer, '\0', PACKET_SIZE);
-	memset(recvBuffer, '\0', PACKET_SIZE);
-
 	int itemId;
 	std::cout << "재고를 줄일 아이템 id를 입력해주세요.\t";
 	std::cin >> itemId;
@@ -286,36 +283,10 @@ void reduceStock(SOCKET& serverSocket)
 	unsigned int castItemId = static_cast<unsigned int>(itemId);
 	unsigned int castCount = static_cast<unsigned int>(count);
 
-	int offset = 0;
-	short command = 5;
-
-	memcpy(sendBuffer + offset, &command, REQ_COMMAND_SIZE);
-	offset += REQ_COMMAND_SIZE;
-
-	memcpy(sendBuffer + offset, &castItemId, sizeof(castItemId));
-	offset += sizeof(castItemId);
-
-	memcpy(sendBuffer + offset, &castCount, sizeof(castCount));
-
-	send(serverSocket, sendBuffer, PACKET_SIZE, 0);
-
-	// 결과 수신
-	recv(serverSocket, recvBuffer, PACKET_SIZE, 0);
-
-	offset = 0;
-
-	memcpy(&resStatus, recvBuffer + offset, RES_STATUS_SIZE);
-	offset += RES_STATUS_SIZE;
-
-	resMessage.assign(recvBuffer + offset, RES_MESSAGE_SIZE);
-	offset += RES_MESSAGE_SIZE;
-
-	std::string data(recvBuffer + offset);
-
-	if (resStatus == 1)
-		std::cout << data;
-	else
-		std::cout << resMessage;
+	ReduceStockRequest req(castItemId, castCount);
+	ReduceStockResponse res;
+	dataManager.sendToServer(serverSocket, req, res);
+	std::cout << res.getMessage();
 }
 
 bool isValidItemId(int itemId)
