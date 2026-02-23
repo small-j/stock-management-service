@@ -6,6 +6,8 @@
 #include "DataManager.h"
 #include "GetMenusRequest.h"
 #include "GetMenusResponse.h"
+#include "GetItemTypesRequest.h"
+#include "GetItemTypesResponse.h"
 #include "PrintItemRequest.h"
 #include "PrintItemResponse.h"
 
@@ -132,29 +134,23 @@ void printMenu(SOCKET& serverSocket, DataManager dataManager)
 		std::cout << res.getMessage();
 }
 
-void addItem(SOCKET& serverSocket)
+GetItemTypesResponse printItemTypes(SOCKET& serverSocket, DataManager dataManager)
 {
-	char sendBuffer[PACKET_SIZE] = {};
-	char recvBuffer[PACKET_SIZE] = {};
-	short resStatus = 0;
-	short command = -1;
-	std::string resMessage;
+	GetItemTypesRequest req;
+	GetItemTypesResponse res;
+	dataManager.sendToServer(serverSocket, req, res);
+	return res;
+}
 
-	memset(sendBuffer, '\0', PACKET_SIZE);
-	memset(recvBuffer, '\0', PACKET_SIZE);
-
-	// send + recv 아이템 타입 정보 서버로부터 수신.
-	command = 6;
-	memcpy(sendBuffer, &command, REQ_COMMAND_SIZE);
-	send(serverSocket, sendBuffer, PACKET_SIZE, 0);
-	recv(serverSocket, recvBuffer, PACKET_SIZE, 0);
-
-	memcpy(&resStatus, recvBuffer, RES_STATUS_SIZE);
-	resMessage.assign(recvBuffer + RES_STATUS_SIZE, RES_MESSAGE_SIZE);
-	std::string itemTypeStr(recvBuffer + RES_STATUS_SIZE + RES_MESSAGE_SIZE);
-
-	if (resStatus != 1) {
-		std::cout << "아이템 타입을 가져오는데 실패했습니다. 다시 시도해주세요.";
+void addItem(SOCKET& serverSocket, DataManager dataManager)
+{
+	GetItemTypesResponse res = printItemTypes(serverSocket, dataManager);
+	if (res.getStatus() == 1) {
+		std::cout << res.toString();
+	}
+	else {
+		std::cout << res.getMessage();
+		return;
 	}
 
 	// 필요한 데이터 입력 받기

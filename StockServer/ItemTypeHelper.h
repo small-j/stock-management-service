@@ -1,5 +1,6 @@
 #pragma once
 #include <array>
+#include <vector>
 
 enum ItemType;
 
@@ -17,11 +18,11 @@ private:
 	};
 
 public:
-    static std::string getAllItemInfoToString() {
-        std::string result =  "사용 가능한 아이템 타입:\n";
+    static std::vector<std::string> getAllItemInfosToString() {
+		std::vector<std::string> result;
         int index = 1;
         for (const auto& str : enumToString) {
-            result += std::to_string(index) + ". " + str + "\n";
+            result.push_back(std::to_string(index) + ". " + str);
             index++;
         }
 

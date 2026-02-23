@@ -10,7 +10,7 @@ struct Request {
 		PRINT_ITEM,
 		ADD_STOCK,
 		REDUCE_STOCK,
-		PRINT_ITEM_TYPE,
+		GET_ITEM_TYPE,
 		GET_MENU,
 		COUNT
 	};
