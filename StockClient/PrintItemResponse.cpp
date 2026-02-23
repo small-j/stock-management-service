@@ -12,6 +12,10 @@ int PrintItemResponse::serialize(char* buffer) {
 int PrintItemResponse::deserialize(const char* buffer) {
 	int offset = __super::deserialize(buffer);
 
+	int strLength = 0;
+	memcpy(&strLength, buffer + offset, sizeof(int));
+	offset += sizeof(int);
+
 	_itemList.assign(buffer + offset);
 
 	return offset;
