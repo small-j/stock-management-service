@@ -36,6 +36,7 @@ void printFromSocket(SOCKET& clientSocket, short status, string& msg, std::optio
 
 bool execute(SOCKET& clientSocket, short command, ItemManager& itemManager, StockManager& stockManager, const char* dataPtr);
 
+void menus(SOCKET& clientSocket, ItemManager& itemManager);
 void addItem(SOCKET& clientSocket, ItemManager& itemManager, const char* dataPtr);
 void removeItem(SOCKET& clientSocket, ItemManager& itemManager, StockManager& stockManager, const char* dataPtr);
 void printItemList(SOCKET& clientSocket, ItemManager& itemManager);
@@ -122,25 +123,37 @@ void run(SOCKET& clientSocket) {
 			send(clientSocket, response, sizeof(response), 0);
 			break;
 		}
-
-		//printMenu(clientSocket);
 	}
 }
 
 void printFromSocket(SOCKET& clientSocket, short status, std::string& msg, std::optional<std::string_view> data = std::nullopt)
 {
+	//int maxDataSize = PACKET_SIZE - RES_STATUS_SIZE - RES_MESSAGE_SIZE;
+
+	//if (data != std::nullopt 
+	//	&& data.value().size() > maxDataSize) {
+	//	throw std::out_of_range("데이터 크기가 버퍼 용량을 초과했습니다."); // 질문
+	//}
+
+	int offset = 0;
 	char sendBuffer[PACKET_SIZE];
-	if (data != std::nullopt 
-		&& data.value().size() > PACKET_SIZE - RES_STATUS_SIZE - RES_MESSAGE_SIZE) {
-		throw std::out_of_range("데이터 크기가 버퍼 용량을 초과했습니다."); // 질문
-	}
-
 	memset(sendBuffer, '\0', PACKET_SIZE);
-	memcpy(sendBuffer, &status, RES_STATUS_SIZE);
-	memcpy(sendBuffer + RES_STATUS_SIZE, msg.c_str(), msg.length());
 
-	if (data.has_value())
-		memcpy(sendBuffer + RES_STATUS_SIZE + RES_MESSAGE_SIZE, data.value().data(), data.value().size());
+	memcpy(sendBuffer, &status, RES_STATUS_SIZE);
+	offset += RES_STATUS_SIZE;
+
+	memcpy(sendBuffer + offset, msg.c_str(), msg.length());
+	offset += RES_MESSAGE_SIZE;
+
+	if (data.has_value()) {
+		int dataSize = static_cast<int>(data.value().size());
+
+		memcpy(sendBuffer + offset, &dataSize, sizeof(dataSize));
+		offset += sizeof(dataSize);
+
+		memcpy(sendBuffer + offset, data.value().data(), dataSize);
+		offset += dataSize;
+	}
 	
 	send(clientSocket, sendBuffer, PACKET_SIZE, 0);
 }
@@ -149,27 +162,53 @@ bool execute(SOCKET& clientSocket, short command, ItemManager& itemManager, Stoc
 {
 	switch (command)
 	{
-	case 1:
+	case 0:
 		addItem(clientSocket, itemManager, dataPtr);
 		return true;
-	case 2:
+	case 1:
 		removeItem(clientSocket, itemManager, stockManager, dataPtr);
 		return true;
-	case 3:
+	case 2:
 		printItemList(clientSocket, itemManager);
 		return true;
-	case 4:
+	case 3:
 		addStock(clientSocket, itemManager, stockManager, dataPtr);
 		return true;
-	case 5:
+	case 4:
 		reduceStock(clientSocket, stockManager, dataPtr);
 		return true;
-	case 6:
+	case 5:
 		printItemType(clientSocket);
+		return true;
+	case 6:
+		menus(clientSocket, itemManager);
 		return true;
 	default:
 		return false;
 	}
+}
+
+void menus(SOCKET& clientSocket, ItemManager& itemManager)
+{
+	std::string menuStr[] = {
+		"1. 아이템 추가", 
+		"2. 아이템 삭제",
+		"3. 아이템 목록 조회",
+		"4. 재고 추가",
+		"5. 재고 삭제",
+		"그 외. 종료"
+	};
+
+	std::string msg = "success";
+	string datas;
+	int len = std::size(menuStr);
+	for (int i = 0; i < len; i++)
+	{
+		datas += menuStr[i];
+		if (i != len - 1) datas += ',';
+	}
+
+	printFromSocket(clientSocket, 1, msg, datas);
 }
 
 void addItem(SOCKET& clientSocket, ItemManager& itemManager, const char* dataPtr)

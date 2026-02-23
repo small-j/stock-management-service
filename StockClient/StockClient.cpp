@@ -4,6 +4,8 @@
 #include <charconv>
 #include <limits>
 #include "DataManager.h"
+#include "GetMenusRequest.h"
+#include "GetMenusResponse.h"
 #include "PrintItemRequest.h"
 #include "PrintItemResponse.h"
 
@@ -47,9 +49,9 @@
 // data -> 1023byte
 // method에서 지정된 형태의 데이터가 들어가있다
 
-void printMenu();
 bool execute(SOCKET& serverSocket, short command, DataManager dataManager);
 
+void printMenu(SOCKET& serverSocket, DataManager dataManager);
 void addItem(SOCKET& serverSocket);
 void removeItem(SOCKET& serverSocket);
 void printItemList(SOCKET& serverSocket, DataManager dataManager);
@@ -79,7 +81,7 @@ int main()
 	
 	while (1)
 	{
-		printMenu();
+		printMenu(hSocket, dataManager);
 
 		short command;
 		std::cin >> command;
@@ -116,6 +118,18 @@ bool execute(SOCKET& serverSocket, short command, DataManager dataManager)
 	default:
 		return false;
 	}
+}
+
+void printMenu(SOCKET& serverSocket, DataManager dataManager)
+{
+	GetMenusRequest req;
+	GetMenusResponse res;
+	dataManager.sendToServer(serverSocket, req, res);
+
+	if (res.getStatus() == 1)
+		std::cout << res.toString();
+	else
+		std::cout << res.getMessage();
 }
 
 void addItem(SOCKET& serverSocket)
