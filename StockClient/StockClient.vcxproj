@@ -127,18 +127,40 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="AddItemRequest.h" />
-    <ClCompile Include="AddStockRequest.h" />
-    <ClCompile Include="DataReceiver.h" />
+    <ClCompile Include="AddItemRequest.cpp" />
+    <ClCompile Include="AddStockRequest.cpp" />
+    <ClCompile Include="AddStockResponse.h" />
+    <ClCompile Include="BaseRequest.cpp" />
+    <ClCompile Include="BaseResponse.cpp" />
+    <ClCompile Include="DataManager.cpp" />
+    <ClCompile Include="GetItemTypesResponse.cpp" />
+    <ClCompile Include="GetMenusRequest.h" />
+    <ClCompile Include="GetMenusResponse.cpp" />
     <ClCompile Include="PrintItemRequest.h" />
-    <ClCompile Include="RemoveItemRequest.h" />
-    <ClCompile Include="DataSender.h" />
+    <ClCompile Include="DataManager.h" />
+    <ClCompile Include="PrintItemResponse.cpp" />
+    <ClCompile Include="ReduceStockRequest.cpp" />
+    <ClCompile Include="RemoveItemRequest.cpp" />
     <ClCompile Include="StockClient.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AddItemRequest.h" />
+    <ClInclude Include="AddItemResponse.h" />
+    <ClInclude Include="AddStockRequest.h" />
     <ClInclude Include="BaseRequest.h" />
+    <ClInclude Include="BaseResponse.h" />
+    <ClInclude Include="GetItemTypesRequest.h" />
+    <ClInclude Include="GetItemTypesResponse.h" />
+    <ClInclude Include="GetMenusResponse.h" />
+    <ClInclude Include="PrintItemResponse.h" />
     <ClInclude Include="ReduceStockRequest.h" />
+    <ClInclude Include="ReduceStockResponse.h" />
+    <ClInclude Include="RemoveItemRequest.h" />
+    <ClInclude Include="RemoveItemResponse.h" />
     <ClInclude Include="RequestCommand.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="StockClient.slnx" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
