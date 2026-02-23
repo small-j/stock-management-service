@@ -33,7 +33,6 @@ bool Item::isValid() const {
 }
 
 const string Item::toString() const {
-	// string formatting 하는법 찾아보기
 	string enumToString;
 	if (ItemTypeHelper::toString(_type, &enumToString)) {
 		return std::format("Item ID: {}, Name: {}, Type: {}", _id, _name, enumToString);

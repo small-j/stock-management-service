@@ -10,8 +10,6 @@ const unsigned int ItemManager::publishItemId() {
 		}
 	}
 	return Item::INVALID_ID;
-
-	// try catch는 로직 실행을 쭉 내려가게 되어있지 않아서 잘 꼭 필요한 경우에만 쓴다.
 }
 
 // item 동적할당. 여기서 아이디 발급 실패시 예외처리.
@@ -32,8 +30,7 @@ bool ItemManager::addItem(const string& name, const ItemType& type) {
 }
 
 // 동적할당 해제. stock과 연결된 item은 삭제 불가.
-// item, stock manager는 무슨 관계인가? 동등한 관계?
-// 의존성이 약해질수록 상위에서 처리해주어야 하는 로직, 작업이 많아지고 사용 방법이 어려워짐.
+// 현재는 의존성이 약해질수록 상위에서 처리해주어야 하는 로직, 작업이 많아지고 사용 방법이 어려워짐.
 bool ItemManager::removeItem(const unsigned int itemId) {
 	auto itemItr = _items.find(itemId);
 	if (_items.end() == itemItr) return false; // not found item id. already removed.
@@ -42,7 +39,7 @@ bool ItemManager::removeItem(const unsigned int itemId) {
 	return true;
 }
 
-// 쉐어드 포인터로 반환하는 것과 쉐어드 포인터의 참조형으로 반환하는 것과 다름
+// shared_ptr로 반환하는 것과 shared_ptr의 참조형으로 반환하는 것과 다름
 // -> item을 수정할일이 있으면 참조형으로 반환해야함.
 const shared_ptr<Item> ItemManager::findItemById(const unsigned int itemId) const {
 	//map search 

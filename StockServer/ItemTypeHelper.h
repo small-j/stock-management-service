@@ -11,14 +11,10 @@ private:
     //    "CLOTHES"
     //};
 
-    // 아래 부분 ai한테 물어본거 슨생님께 여쭤보기.
     inline static std::array<std::string, static_cast<size_t>(ItemType::COUNT)> enumToString = { // itemtype과 수동으로 동기화해야함.
         "FOOD",
         "CLOTHES"
 	};
-
-    /*vector -> count만큼 열어두고, 나중에 food가 지워지거나 다른 타입이 추가되면 알고있는 크기랑 다르면 빌드 에러가 남.
-        food를 접근하는 경우는 food가 없는데 왜 접근함? 하고 에러남.*/
 
 public:
     static std::string getAllItemInfoToString() {
