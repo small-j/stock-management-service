@@ -27,13 +27,7 @@ private:
 
 public:
 	std::vector<std::string> getMenus() { return _menus; }
-	std::string toString() {
-		std::string result;
-		for (size_t i = 0; i < _menus.size(); ++i) {
-			result += _menus[i] + "\n";
-		}
-		return result;
-	}
+	std::string toString();
 
 	int serialize(char* buffer) override;
 	int deserialize(const char* buffer) override;

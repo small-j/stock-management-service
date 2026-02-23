@@ -1,5 +1,13 @@
 #include "GetMenusResponse.h"
 
+std::string GetMenusResponse::toString() {
+	std::string result;
+	for (size_t i = 0; i < _menus.size(); ++i) {
+		result += _menus[i] + "\n";
+	}
+	return result;
+}
+
 int GetMenusResponse::serialize(char* buffer) {
 	int offset = __super::serialize(buffer);
 	int strLength = 0;
