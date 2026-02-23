@@ -36,17 +36,16 @@ bool execute(SOCKET& serverSocket, short command, DataManager dataManager);
 
 void printMenu(SOCKET& serverSocket, DataManager dataManager);
 void addItem(SOCKET& serverSocket, DataManager dataManager);
-void removeItem(SOCKET& serverSocket);
+void removeItem(SOCKET& serverSocket, DataManager dataManager);
 void printItemList(SOCKET& serverSocket, DataManager dataManager);
-void addStock(SOCKET& serverSocket);
-void reduceStock(SOCKET& serverSocket);
+void addStock(SOCKET& serverSocket, DataManager dataManager);
+void reduceStock(SOCKET& serverSocket, DataManager dataManager);
 
 bool isValidItemId(int itemId);
 bool isValidStockCount(long long count);
 
 int main()
 {
-
 	WSADATA  wsa;
 	WSAStartup(MAKEWORD(2, 2), &wsa);
 
@@ -89,16 +88,16 @@ bool execute(SOCKET& serverSocket, short command, DataManager dataManager)
 		addItem(serverSocket, dataManager);
 		return true;
 	case 2:
-		removeItem(serverSocket);
+		removeItem(serverSocket, dataManager);
 		return true;
 	case 3:
 		printItemList(serverSocket, dataManager);
 		return true;
 	case 4:
-		addStock(serverSocket);
+		addStock(serverSocket, dataManager);
 		return true;
 	case 5:
-		reduceStock(serverSocket);
+		reduceStock(serverSocket, dataManager);
 		return true;
 	default:
 		return false;
