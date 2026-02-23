@@ -12,32 +12,12 @@
 #include "PrintItemResponse.h"
 #include "AddItemRequest.h"
 #include "AddItemResponse.h"
+#include "RemoveItemRequest.h"
+#include "RemoveItemResponse.h"
 #include "AddStockRequest.h"
 #include "AddStockResponse.h"
 #include "ReduceStockRequest.h"
 #include "ReduceStockResponse.h"
-
-// request, response 클래스 추가
-// base에는 커맨드 종류
-// 가지치기를 어떻게 할까
-// 각각의 기능 별로 별도의 클래스가 될수도 있고
-// 기능별로 묶어서 처리할 수도 있음.
-// base랑 sub req, res 가 분리되면
-// 확장성이 높다
-// 후에 modify가 추가되면 
-// 1 add item, print item
-//main request commnad, sub request command
-//미리 add, edit, delete, -> 메소드 넣어놓고
-//base request의 command
-//이걸 상속받는 item의 request 클래스
-//
-//base request -> item request: add, edit, delete, print
-//base reuqest는 커맨드 종류만 구현.(넘버링만) 실제로는 하위 request에서 동작 구현함.
-//아이템을 구별할 수 
-//command 가 공통으로 쓰일 수 있음.
-//
-//어떤 동작을 해주세요. 명령 동작()
-
 
 #pragma comment(lib, "ws2_32.lib")
 
@@ -173,15 +153,8 @@ void addItem(SOCKET& serverSocket, DataManager dataManager)
 	std::cout << res.getMessage();
 }
 
-void removeItem(SOCKET& serverSocket)
+void removeItem(SOCKET& serverSocket, DataManager dataManager)
 {
-	char sendBuffer[PACKET_SIZE];
-	char recvBuffer[PACKET_SIZE];
-	short resStatus = 0;
-	std::string resMessage;
-	memset(sendBuffer, '\0', PACKET_SIZE);
-	memset(recvBuffer, '\0', PACKET_SIZE);
-
 	int itemId;
 	std::cout << "아이템의 아이디를 입력해주세요.\t";
 	std::cin >> itemId;
@@ -191,34 +164,12 @@ void removeItem(SOCKET& serverSocket)
 		return;
 	}
 
-	int offset = 0;
-	short command = 2;
 	unsigned int castItemId = static_cast<unsigned int>(itemId);
 
-	memcpy(sendBuffer + offset, &command, REQ_COMMAND_SIZE);
-	offset += REQ_COMMAND_SIZE;
-
-	memcpy(sendBuffer + offset, &castItemId, sizeof(castItemId));
-
-	send(serverSocket, sendBuffer, PACKET_SIZE, 0);
-
-	// 결과 수신
-	recv(serverSocket, recvBuffer, PACKET_SIZE, 0);
-
-	offset = 0;
-
-	memcpy(&resStatus, recvBuffer + offset, RES_STATUS_SIZE);
-	offset += RES_STATUS_SIZE;
-
-	resMessage.assign(recvBuffer + offset, RES_MESSAGE_SIZE);
-	offset += RES_MESSAGE_SIZE;
-
-	std::string data(recvBuffer + offset);
-
-	if (resStatus == 1)
-		std::cout << data;
-	else
-		std::cout << resMessage;
+	RemoveItemRequest req(castItemId);
+	RemoveItemResponse res;
+	dataManager.sendToServer(serverSocket, req, res);
+	std::cout << res.getMessage();
 }
 
 void printItemList(SOCKET& serverSocket, DataManager dataManager)
