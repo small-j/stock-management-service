@@ -6,7 +6,6 @@
 // header에서는 전방선언해주기.
 // cpp에서는 모르는 자료형은 integer로 취급함.
 
-// 사용법이 비효율적이다? -> 이건 어떤 의미셨는지 다시 여쭤보기.
 enum ItemType
 {
     UNKNOWN = -1,   // 모든 enum은 처음에 UNKNOWN을 넣어주는게 좋음. 안전장치.
