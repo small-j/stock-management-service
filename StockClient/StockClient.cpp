@@ -12,6 +12,8 @@
 #include "PrintItemResponse.h"
 #include "AddItemRequest.h"
 #include "AddItemResponse.h"
+#include "AddStockRequest.h"
+#include "AddStockResponse.h"
 
 // request, response 클래스 추가
 // base에는 커맨드 종류
@@ -215,27 +217,6 @@ void removeItem(SOCKET& serverSocket)
 		std::cout << resMessage;
 }
 
-//void printItemList(SOCKET& serverSocket)
-//{
-//	char buffer[PACKET_SIZE] = {};
-//	short command = 3;
-//	memcpy(buffer, &command, REQ_COMMAND_SIZE);
-//	send(serverSocket, buffer, PACKET_SIZE, 0);
-//
-//	char recvBuffer[PACKET_SIZE];
-//	recv(serverSocket, recvBuffer, PACKET_SIZE, 0);
-//	
-//	short resStatus;
-//	memcpy(&resStatus, recvBuffer, RES_STATUS_SIZE);
-//	std::string resMessage(recvBuffer + RES_STATUS_SIZE, RES_MESSAGE_SIZE);
-//	std::string data(recvBuffer + RES_STATUS_SIZE + RES_MESSAGE_SIZE);
-//
-//	if (resStatus == 1)
-//		std::cout << data;
-//	else
-//		std::cout << resMessage;
-//}
-
 void printItemList(SOCKET& serverSocket, DataManager dataManager)
 {
 	PrintItemRequest req;
@@ -248,15 +229,8 @@ void printItemList(SOCKET& serverSocket, DataManager dataManager)
 		std::cout << res.getMessage();
 }
 
-void addStock(SOCKET& serverSocket)
+void addStock(SOCKET& serverSocket, DataManager dataManager)
 {
-	char sendBuffer[PACKET_SIZE];
-	char recvBuffer[PACKET_SIZE];
-	short resStatus = 0;
-	std::string resMessage;
-	memset(sendBuffer, '\0', PACKET_SIZE);
-	memset(recvBuffer, '\0', PACKET_SIZE);
-
 	int itemId;
 	std::cout << "재고를 추가할 아이템 id를 입력해주세요.\t";
 	std::cin >> itemId;
@@ -277,36 +251,10 @@ void addStock(SOCKET& serverSocket)
 	unsigned int castItemId = static_cast<unsigned int>(itemId);
 	unsigned int castCount = static_cast<unsigned int>(count);
 
-	int offset = 0;
-	short command = 4;
-
-	memcpy(sendBuffer + offset, &command, REQ_COMMAND_SIZE);
-	offset += REQ_COMMAND_SIZE;
-
-	memcpy(sendBuffer + offset, &castItemId, sizeof(castItemId));
-	offset += sizeof(castItemId);
-
-	memcpy(sendBuffer + offset, &castCount, sizeof(castCount));
-
-	send(serverSocket, sendBuffer, PACKET_SIZE, 0);
-
-	// 결과 수신
-	recv(serverSocket, recvBuffer, PACKET_SIZE, 0);
-
-	offset = 0;
-
-	memcpy(&resStatus, recvBuffer + offset, RES_STATUS_SIZE);
-	offset += RES_STATUS_SIZE;
-
-	resMessage.assign(recvBuffer + offset, RES_MESSAGE_SIZE);
-	offset += RES_MESSAGE_SIZE;
-
-	std::string data(recvBuffer + offset);
-
-	if (resStatus == 1)
-		std::cout << data;
-	else
-		std::cout << resMessage;
+	AddStockRequest req(itemId, count);
+	AddStockResponse res;
+	dataManager.sendToServer(serverSocket, req, res);
+	std::cout << res.getMessage();
 }
 
 void reduceStock(SOCKET& serverSocket)
