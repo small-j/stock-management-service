@@ -10,6 +10,8 @@
 #include "GetItemTypesResponse.h"
 #include "PrintItemRequest.h"
 #include "PrintItemResponse.h"
+#include "AddItemRequest.h"
+#include "AddItemResponse.h"
 
 // request, response 클래스 추가
 // base에는 커맨드 종류
@@ -54,7 +56,7 @@
 bool execute(SOCKET& serverSocket, short command, DataManager dataManager);
 
 void printMenu(SOCKET& serverSocket, DataManager dataManager);
-void addItem(SOCKET& serverSocket);
+void addItem(SOCKET& serverSocket, DataManager dataManager);
 void removeItem(SOCKET& serverSocket);
 void printItemList(SOCKET& serverSocket, DataManager dataManager);
 void addStock(SOCKET& serverSocket);
@@ -103,7 +105,7 @@ bool execute(SOCKET& serverSocket, short command, DataManager dataManager)
 	switch (command)
 	{
 	case 1:
-		addItem(serverSocket);
+		addItem(serverSocket, dataManager);
 		return true;
 	case 2:
 		removeItem(serverSocket);
@@ -144,12 +146,9 @@ GetItemTypesResponse printItemTypes(SOCKET& serverSocket, DataManager dataManage
 
 void addItem(SOCKET& serverSocket, DataManager dataManager)
 {
-	GetItemTypesResponse res = printItemTypes(serverSocket, dataManager);
-	if (res.getStatus() == 1) {
-		std::cout << res.toString();
-	}
-	else {
-		std::cout << res.getMessage();
+	GetItemTypesResponse itemTypesRes = printItemTypes(serverSocket, dataManager);
+	if (itemTypesRes.getStatus() != 1) {
+		std::cout << itemTypesRes.getMessage();
 		return;
 	}
 
@@ -159,48 +158,13 @@ void addItem(SOCKET& serverSocket, DataManager dataManager)
 	std::cout << "아이템의 이름을 입력해주세요.\t";
 	std::cin >> name;
 	std::cout << "아이템의 타입의 번호를 선택해주세요.\n";
-	std::cout << itemTypeStr;
+	std::cout << itemTypesRes.toString();
 	std::cin >> itemType;
 
-	int nameLen = static_cast<int>(name.length());
-	int offset = 0;
-
-	// send + recv
-	memset(sendBuffer, '\0', PACKET_SIZE);
-	memset(recvBuffer, '\0', PACKET_SIZE);
-
-	command = 1;
-	
-	memcpy(sendBuffer + offset, &command, sizeof(command));
-	offset += REQ_COMMAND_SIZE;
-
-	memcpy(sendBuffer + offset, &nameLen, sizeof(nameLen)); // name 길이 먼저 기록
-	offset += sizeof(nameLen);
-
-	memcpy(sendBuffer + offset, name.c_str(), nameLen); // name 기록
-	offset += nameLen;
-
-	memcpy(sendBuffer + offset, &itemType, sizeof(itemType)); // itemType 기록
-
-	send(serverSocket, sendBuffer, PACKET_SIZE, 0);
-	
-	// 결과 수신
-	recv(serverSocket, recvBuffer, PACKET_SIZE, 0);
-
-	offset = 0;
-
-	memcpy(&resStatus, recvBuffer + offset, RES_STATUS_SIZE);
-	offset += RES_STATUS_SIZE;
-	
-	resMessage.assign(recvBuffer + offset, RES_MESSAGE_SIZE);
-	offset += RES_MESSAGE_SIZE;
-	
-	std::string data(recvBuffer + offset);
-
-	if (resStatus == 1)
-		std::cout << data;
-	else
-		std::cout << resMessage;
+	AddItemRequest req(name, itemType);
+	AddItemResponse res;
+	dataManager.sendToServer(serverSocket, req, res);
+	std::cout << res.getMessage();
 }
 
 void removeItem(SOCKET& serverSocket)

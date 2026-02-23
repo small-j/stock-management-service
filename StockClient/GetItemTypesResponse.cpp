@@ -1,7 +1,7 @@
 #include "GetItemTypesResponse.h"
 
 std::string GetItemTypesResponse::toString() {
-	std::string result = "사용 가능한 아이템 타입:\n";
+	std::string result = "사용 가능한 아이템 타입:\n"; // TODO : 한국어 인코딩 고치기
 	for (size_t i = 0; i < _itemTypes.size(); ++i) {
 		result += _itemTypes[i] + "\n";
 	}
