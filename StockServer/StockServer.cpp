@@ -211,6 +211,21 @@ void menus(SOCKET& clientSocket, ItemManager& itemManager)
 	printFromSocket(clientSocket, 1, msg, datas);
 }
 
+void printItemType(SOCKET& clientSocket)
+{
+	std::vector<std::string> itemTypeStr = ItemTypeHelper::getAllItemInfosToString();
+	std::string msg = "success";
+	
+	string datas;
+	int len = itemTypeStr.size();
+	for (int i = 0; i < len; i++)
+	{
+		datas += itemTypeStr[i];
+		if (i != len - 1) datas += ',';
+	}
+	printFromSocket(clientSocket, 1, msg, datas);
+}
+
 void addItem(SOCKET& clientSocket, ItemManager& itemManager, const char* dataPtr)
 {
 	int offset = 0;
@@ -290,20 +305,7 @@ void addStock(SOCKET& clientSocket, ItemManager& itemManager, StockManager& stoc
 	if (stockManager.addStock(itemId, count))
 	{
 		msg = "재고가 늘어났습니다.\n";
-
-		shared_ptr<Stock> stock = stockManager.findStockByItemId(itemId);
-		if (stock == nullptr)
-		{
-			msg += "재고 조회에 실패했습니다. 다시 시도해주세요.\n";
-			printFromSocket(clientSocket, 0, msg);
-			return;
-		}
-
-		std::string data = std::to_string(stock->getItemId()) 
-			+ ": "
-			+ std::to_string(stock->getCount())
-			+ "\n";
-		printFromSocket(clientSocket, 1, msg, data);
+		printFromSocket(clientSocket, 0, msg);
 	}
 	else
 	{
@@ -325,17 +327,7 @@ void reduceStock(SOCKET& clientSocket, StockManager& stockManager, const char* d
 	if (stockManager.reduceStock(itemId, count))
 	{
 		msg = "재고가 삭제되었습니다.\n";
-		if (shared_ptr<Stock> stock = stockManager.findStockByItemId(itemId)) {
-			std::string data = std::to_string(stock->getItemId()) 
-				+ "재고 수 : "
-				+ std::to_string(stock->getCount())
-				+ "\n";
-			printFromSocket(clientSocket, 1, msg, data);
-		}
-		else {
-			msg += "재고 조회에 실패했습니다. 다시 시도해주세요.\n";
-			printFromSocket(clientSocket, 0, msg);
-		}
+		printFromSocket(clientSocket, 1, msg);
 	}
 	else
 	{
@@ -344,9 +336,18 @@ void reduceStock(SOCKET& clientSocket, StockManager& stockManager, const char* d
 	}
 }
 
-void printItemType(SOCKET& clientSocket)
-{
-	std::string itemTypeStr = ItemTypeHelper::getAllItemInfoToString();
-	std::string msg = "success";
-	printFromSocket(clientSocket, 1, msg, itemTypeStr);
-}
+// TODO
+//void getStockList()
+//{
+//	if (shared_ptr<Stock> stock = stockManager.findStockByItemId(itemId)) {
+//		std::string data = std::to_string(stock->getItemId())
+//			+ "재고 수 : "
+//			+ std::to_string(stock->getCount())
+//			+ "\n";
+//		printFromSocket(clientSocket, 1, msg, data);
+//	}
+//	else {
+//		msg += "재고 조회에 실패했습니다. 다시 시도해주세요.\n";
+//		printFromSocket(clientSocket, 0, msg);
+//	}
+//}
