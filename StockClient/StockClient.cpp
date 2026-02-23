@@ -22,11 +22,6 @@
 #pragma comment(lib, "ws2_32.lib")
 
 #define PORT 4578
-#define PACKET_SIZE 1024 // byte
-
-#define REQ_COMMAND_SIZE 2
-#define RES_STATUS_SIZE 2 // 0: fail 1: success
-#define RES_MESSAGE_SIZE 90 
 
 #define SERVER_IP "127.0.0.1"
 
