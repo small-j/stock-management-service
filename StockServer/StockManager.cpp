@@ -2,7 +2,7 @@
 #include "StockManager.h"
 #include "Stock.h"
 
-// 새로 추가하는 Stock은 동적할당. !!new는 동적할당인가?
+// 새로 추가하는 Stock은 동적할당.
 bool StockManager::addStock(const unsigned int itemId, const unsigned int count) {
 	if (count == 0) return false;
 	

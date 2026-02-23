@@ -30,7 +30,6 @@ bool Stock::decreaseCount(const unsigned int count) {
 
 
 bool Stock::isValid() const {
-	// count의 range 체크해야함.
-	if (_itemId == Item::INVALID_ID) return false; // body에서만 사용하면 그냥 header에 item.h include 안해도 됨.
+	if (_itemId == Item::INVALID_ID) return false;
 	if (_count > COUNT_MAX) return false;
 }
