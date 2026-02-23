@@ -18,8 +18,6 @@ private:
 public:
 	std::string getItemList() { return _itemList; }
 
-	// int* offset -> 부모 클래스의offset, 반환받거나
-	// override
 	int serialize(char* buffer) override;
 	int deserialize(const char* buffer) override;
 };

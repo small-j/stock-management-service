@@ -1,4 +1,4 @@
-#pragma on#pragma once
+#pragma once
 #include <iostream>
 #include "RequestCommand.h"
 #include "BaseRequest.h"

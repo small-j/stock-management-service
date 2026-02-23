@@ -1,16 +1,14 @@
 #pragma once
-#include <iostream>
+#include "pch.h"
 
 class BaseResponse {
 public:
-	BaseResponse(const short command, bool status, std::string& message)
-		:_command(command)
-		,_status(status)
+	BaseResponse(bool status, std::string& message)
+		:_status(status)
 		,_message(message) {
 	}
 
 private:
-	short _command;
 	bool _status;
-	std::string message;
+	std::string _message;
 };
