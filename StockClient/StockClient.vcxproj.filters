@@ -48,6 +48,18 @@
     <ClCompile Include="GetItemTypesResponse.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
+    <ClCompile Include="AddStockRequest.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="AddStockResponse.h">
+      <Filter>헤더 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="ReduceStockRequest.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="RemoveItemRequest.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BaseRequest.h">
@@ -78,6 +90,18 @@
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="AddStockRequest.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="ReduceStockRequest.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="ReduceStockResponse.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="RemoveItemRequest.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="RemoveItemResponse.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
   </ItemGroup>
