@@ -25,13 +25,6 @@
 
 #define SERVER_IP "127.0.0.1"
 
-// method -> 1byte
-// method -1 -> destroy connection
-// method 1 -> print data
-// 
-// data -> 1023byte
-// method에서 지정된 형태의 데이터가 들어가있다
-
 bool execute(SOCKET& serverSocket, short command, DataManager dataManager);
 
 void printMenu(SOCKET& serverSocket, DataManager dataManager);
