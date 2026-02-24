@@ -20,6 +20,9 @@
 #include "BaseRequest.h"
 #include "BaseResponse.h"
 #include "GetMenusResponse.h"
+#include "GetItemTypesResponse.h"
+#include "AddItemRequest.h"
+#include "AddItemResponse.h"
 
 using namespace std;
 
@@ -34,17 +37,15 @@ int8_t DESTROY_CONNECTION_METHOD = -1;
 
 void ErrorHandler(const string& errMsg);
 void run(SOCKET& clientSocket);
-void printFromSocket(SOCKET& clientSocket, short status, string& msg, std::optional<std::string_view> data);
-
 bool execute(SOCKET& clientSocket, DataManager& dataManager, ItemManager& itemManager, StockManager& stockManager, BaseRequest& req, const char* buffer);
 
 void menus(SOCKET& clientSocket, DataManager& dataManager, ItemManager& itemManager);
-void addItem(SOCKET& clientSocket, ItemManager& itemManager, const char* dataPtr);
+void addItem(SOCKET& clientSocket, DataManager dataManager, ItemManager& itemManager, const char* dataPtr);
 void removeItem(SOCKET& clientSocket, ItemManager& itemManager, StockManager& stockManager, const char* dataPtr);
 void printItemList(SOCKET& clientSocket, ItemManager& itemManager);
 void addStock(SOCKET& clientSocket, ItemManager& itemManager, StockManager& stockManager, const char* dataPtr);
 void reduceStock(SOCKET& clientSocket, StockManager& stockManager, const char* dataPtr);
-void printItemType(SOCKET& clientSocket);
+void printItemType(SOCKET& clientSocket, DataManager dataManager);
 
 
 int main()
@@ -138,9 +139,9 @@ bool execute(SOCKET& clientSocket, DataManager& dataManager, ItemManager& itemMa
 
 	switch (req.getCommand())
 	{
-	//case 0:
-	//	addItem(clientSocket, dataManager,  itemManager, buffer);
-	//	return true;
+	case 0:
+		addItem(clientSocket, dataManager,  itemManager, buffer);
+		return true;
 	//case 1:
 	//	removeItem(clientSocket, dataManager, itemManager, stockManager, buffer);
 	//	return true;
@@ -153,9 +154,9 @@ bool execute(SOCKET& clientSocket, DataManager& dataManager, ItemManager& itemMa
 	//case 4:
 	//	reduceStock(clientSocket, dataManager, stockManager, buffer);
 	//	return true;
-	//case 5:
-	//	printItemType(clientSocket, dataManager);
-	//	return true;
+	case 5:
+		printItemType(clientSocket, dataManager);
+		return true;
 	case 6:
 		menus(clientSocket, dataManager, itemManager);
 		return true;
@@ -188,37 +189,49 @@ void menus(SOCKET& clientSocket, DataManager& dataManager, ItemManager& itemMana
 	dataManager.sendToClient(clientSocket, res);
 }
 
-//void printItemType(SOCKET& clientSocket)
-//{
-//	std::vector<std::string> itemTypeStr = ItemTypeHelper::getAllItemInfosToString();
-//	std::string msg = "success";
-//	
-//	string datas;
-//	int len = itemTypeStr.size();
-//	for (int i = 0; i < len; i++)
-//	{
-//		datas += itemTypeStr[i];
-//		if (i != len - 1) datas += ',';
-//	}
-//	printFromSocket(clientSocket, 1, msg, datas);
-//}
+void printItemType(SOCKET& clientSocket, DataManager dataManager)
+{
+	std::vector<std::string> itemTypeStr = ItemTypeHelper::getAllItemInfosToString();
+	std::string msg = "success";
+	
+	string datas;
+	int len = itemTypeStr.size();
+	for (int i = 0; i < len; i++)
+	{
+		datas += itemTypeStr[i];
+		if (i != len - 1) datas += ',';
+	}
 
-//void addItem(SOCKET& clientSocket, ItemManager& itemManager, const char* buffer)
-//{
-//	req
-//		res
-//
-//	if (itemManager.addItem(name, static_cast<ItemType>(itemType - 1)))
-//	{
-//		std::string msg = "아이템이 추가되었습니다.\n";
-//		printFromSocket(clientSocket, 1, msg);
-//		return;
-//	}
-//
-//	std::string msg = "아이템 추가에 실패했습니다.\n";
-//	printFromSocket(clientSocket, 0, msg);
-//}
-//
+	GetItemTypesResponse res(true, msg, datas);
+	dataManager.sendToClient(clientSocket, res);
+}
+
+void addItem(
+	SOCKET& clientSocket, 
+	DataManager dataManager,
+	ItemManager& itemManager, 
+	const char* buffer
+)
+{
+	AddItemRequest req;
+	AddItemResponse res;
+	req.deserialize(buffer);
+
+	if (itemManager.addItem(
+		req.getName(), 
+		static_cast<ItemType>(req.getItemType() - 1))
+		) {
+		std::string msg = "아이템이 추가되었습니다.\n";
+		res = AddItemResponse(true, msg);
+	}
+	else {
+		std::string msg = "아이템 추가에 실패했습니다.\n";
+		res = AddItemResponse(true, msg);
+	}
+
+	dataManager.sendToClient(clientSocket, res);
+}
+
 //void removeItem(SOCKET& clientSocket, ItemManager& itemManager, StockManager& stockManager, const char* dataPtr)
 //{
 //	unsigned int itemId = Item::INVALID_ID;
