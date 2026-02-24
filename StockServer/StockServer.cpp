@@ -28,6 +28,8 @@
 #include "PrintItemResponse.h"
 #include "AddStockRequest.h"
 #include "AddStockResponse.h"
+#include "ReduceStockRequest.h"
+#include "ReduceStockResponse.h"
 
 using namespace std;
 
@@ -49,7 +51,7 @@ void addItem(SOCKET& clientSocket, DataManager& dataManager, ItemManager& itemMa
 void removeItem(SOCKET& clientSocket, DataManager& dataManager, ItemManager& itemManager, StockManager& stockManager, const char* dataPtr);
 void printItemList(SOCKET& clientSocket, DataManager& dataManager, ItemManager& itemManager);
 void addStock(SOCKET& clientSocket, DataManager& dataManager, ItemManager& itemManager, StockManager& stockManager, const char* dataPtr);
-void reduceStock(SOCKET& clientSocket, StockManager& stockManager, const char* dataPtr);
+void reduceStock(SOCKET& clientSocket, DataManager& dataManager, StockManager& stockManager, const char* dataPtr);
 void printItemType(SOCKET& clientSocket, DataManager& dataManager);
 
 
@@ -156,9 +158,9 @@ bool execute(SOCKET& clientSocket, DataManager& dataManager, ItemManager& itemMa
 	case 3:
 		addStock(clientSocket, dataManager, itemManager, stockManager, buffer);
 		return true;
-	//case 4:
-	//	reduceStock(clientSocket, dataManager, stockManager, buffer);
-	//	return true;
+	case 4:
+		reduceStock(clientSocket, dataManager, stockManager, buffer);
+		return true;
 	case 5:
 		printItemType(clientSocket, dataManager);
 		return true;
@@ -324,27 +326,31 @@ void addStock(
 	dataManager.sendToClient(clientSocket, res);
 }
 
-//void reduceStock(SOCKET& clientSocket, StockManager& stockManager, const char* dataPtr)
-//{
-//	unsigned int itemId;
-//	unsigned int count;
-//
-//	memcpy(&itemId, dataPtr, sizeof(itemId));
-//	memcpy(&count, dataPtr + sizeof(itemId), sizeof(count));
-//
-//	std::string msg;
-//
-//	if (stockManager.reduceStock(itemId, count))
-//	{
-//		msg = "재고가 삭제되었습니다.\n";
-//		printFromSocket(clientSocket, 1, msg);
-//	}
-//	else
-//	{
-//		msg = "재고 삭제에 실패했습니다.\n";
-//		printFromSocket(clientSocket, 0, msg);
-//	}
-//}
+void reduceStock(
+	SOCKET& clientSocket,
+	DataManager& dataManager, 
+	StockManager& stockManager, 
+	const char* buffer
+) {
+	ReduceStockRequest req;
+	ReduceStockResponse res;
+	req.deserialize(buffer);
+
+	std::string msg;
+
+	if (stockManager.reduceStock(req.getItemId(), req.getCount()))
+	{
+		msg = "재고가 삭제되었습니다.\n";
+		res = ReduceStockResponse(true, msg);
+	}
+	else
+	{
+		msg = "재고 삭제에 실패했습니다.\n";
+		res = ReduceStockResponse(true, msg);
+	}
+
+	dataManager.sendToClient(clientSocket, res);
+}
 
 // TODO
 //void getStockList()
