@@ -16,7 +16,7 @@ int GetItemTypesResponse::serialize(char* buffer) {
 		strLength += static_cast<int>((*iter).length());
 	}
 
-	memcpy(buffer, &strLength, sizeof(int));
+	memcpy(buffer + offset, &strLength, sizeof(int));
 	offset += sizeof(int);
 
 	for (size_t i = 0; i < _itemTypes.size(); ++i) {
