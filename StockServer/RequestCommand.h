@@ -1,5 +1,4 @@
 #pragma once
-// 아래 되는지 확인해보기
 
 struct Request {
 	enum Command : short
