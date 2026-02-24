@@ -23,6 +23,8 @@
 #include "GetItemTypesResponse.h"
 #include "AddItemRequest.h"
 #include "AddItemResponse.h"
+#include "RemoveItemRequest.h"
+#include "RemoveItemResponse.h"
 #include "PrintItemResponse.h"
 #include "AddStockRequest.h"
 #include "AddStockResponse.h"
@@ -44,7 +46,7 @@ bool execute(SOCKET& clientSocket, DataManager& dataManager, ItemManager& itemMa
 
 void menus(SOCKET& clientSocket, DataManager& dataManager, ItemManager& itemManager);
 void addItem(SOCKET& clientSocket, DataManager& dataManager, ItemManager& itemManager, const char* dataPtr);
-void removeItem(SOCKET& clientSocket, ItemManager& itemManager, StockManager& stockManager, const char* dataPtr);
+void removeItem(SOCKET& clientSocket, DataManager& dataManager, ItemManager& itemManager, StockManager& stockManager, const char* dataPtr);
 void printItemList(SOCKET& clientSocket, DataManager& dataManager, ItemManager& itemManager);
 void addStock(SOCKET& clientSocket, DataManager& dataManager, ItemManager& itemManager, StockManager& stockManager, const char* dataPtr);
 void reduceStock(SOCKET& clientSocket, StockManager& stockManager, const char* dataPtr);
@@ -145,9 +147,9 @@ bool execute(SOCKET& clientSocket, DataManager& dataManager, ItemManager& itemMa
 	case 0:
 		addItem(clientSocket, dataManager,  itemManager, buffer);
 		return true;
-	//case 1:
-	//	removeItem(clientSocket, dataManager, itemManager, stockManager, buffer);
-	//	return true;
+	case 1:
+		removeItem(clientSocket, dataManager, itemManager, stockManager, buffer);
+		return true;
 	case 2:
 		printItemList(clientSocket, dataManager, itemManager);
 		return true;
@@ -239,32 +241,41 @@ void addItem(
 	dataManager.sendToClient(clientSocket, res);
 }
 
-//void removeItem(SOCKET& clientSocket, ItemManager& itemManager, StockManager& stockManager, const char* dataPtr)
-//{
-//	unsigned int itemId = Item::INVALID_ID;
-//	memcpy(&itemId, dataPtr, sizeof(itemId));
-//	
-//	std::string msg;
-//	shared_ptr<Stock> stock = stockManager.findStockByItemId(itemId);
-//	if (stock != nullptr)
-//	{
-//		msg = "해당 아이템은 재고가 남아있어 삭제할 수 없습니다.\n";
-//		printFromSocket(clientSocket, 0, msg);
-//		return;
-//	}
-//
-//	if (itemManager.removeItem(itemId))
-//	{
-//		msg = std::to_string(itemId) + "아이템이 삭제되었습니다.\n";
-//		printFromSocket(clientSocket, 1, msg);
-//	}
-//	else
-//	{
-//		msg = "아이템을 삭제할 수 없습니다.\n";
-//		printFromSocket(clientSocket, 0, msg);
-//	}
-//}
-//
+void removeItem(
+	SOCKET& clientSocket, 
+	DataManager& dataManager,
+	ItemManager& itemManager, 
+	StockManager& stockManager, 
+	const char* buffer
+) {
+	RemoveItemRequest req;
+	RemoveItemResponse res;
+	req.deserialize(buffer);
+	
+	std::string msg;
+	shared_ptr<Stock> stock = stockManager.findStockByItemId(req.getItemId());
+	if (stock != nullptr)
+	{
+		msg = "해당 아이템은 재고가 남아있어 삭제할 수 없습니다.\n";
+		res = RemoveItemResponse(true, msg);
+		dataManager.sendToClient(clientSocket, res);
+		return;
+	}
+
+	if (itemManager.removeItem(req.getItemId()))
+	{
+		msg = std::to_string(req.getItemId()) + " 아이템이 삭제되었습니다.\n";
+		res = RemoveItemResponse(true, msg);
+	}
+	else
+	{
+		msg = "아이템을 삭제할 수 없습니다.\n";
+		res = RemoveItemResponse(true, msg);
+	}
+
+	dataManager.sendToClient(clientSocket, res);
+}
+
 void printItemList(
 	SOCKET& clientSocket, 
 	DataManager& dataManager, 
@@ -303,14 +314,14 @@ void addStock(
 	{
 		msg = "재고가 늘어났습니다.\n";
 		res = AddStockResponse(true, msg);
-		dataManager.sendToClient(clientSocket, res);
 	}
 	else
 	{
 		msg = "재고를 추가할 수 없습니다.\n";
 		res = AddStockResponse(true, msg);
-		dataManager.sendToClient(clientSocket, res);
 	}
+
+	dataManager.sendToClient(clientSocket, res);
 }
 
 //void reduceStock(SOCKET& clientSocket, StockManager& stockManager, const char* dataPtr)
