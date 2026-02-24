@@ -24,6 +24,8 @@
 #include "AddItemRequest.h"
 #include "AddItemResponse.h"
 #include "PrintItemResponse.h"
+#include "AddStockRequest.h"
+#include "AddStockResponse.h"
 
 using namespace std;
 
@@ -41,12 +43,12 @@ void run(SOCKET& clientSocket);
 bool execute(SOCKET& clientSocket, DataManager& dataManager, ItemManager& itemManager, StockManager& stockManager, BaseRequest& req, const char* buffer);
 
 void menus(SOCKET& clientSocket, DataManager& dataManager, ItemManager& itemManager);
-void addItem(SOCKET& clientSocket, DataManager dataManager, ItemManager& itemManager, const char* dataPtr);
+void addItem(SOCKET& clientSocket, DataManager& dataManager, ItemManager& itemManager, const char* dataPtr);
 void removeItem(SOCKET& clientSocket, ItemManager& itemManager, StockManager& stockManager, const char* dataPtr);
-void printItemList(SOCKET& clientSocket, DataManager dataManager, ItemManager& itemManager);
-void addStock(SOCKET& clientSocket, ItemManager& itemManager, StockManager& stockManager, const char* dataPtr);
+void printItemList(SOCKET& clientSocket, DataManager& dataManager, ItemManager& itemManager);
+void addStock(SOCKET& clientSocket, DataManager& dataManager, ItemManager& itemManager, StockManager& stockManager, const char* dataPtr);
 void reduceStock(SOCKET& clientSocket, StockManager& stockManager, const char* dataPtr);
-void printItemType(SOCKET& clientSocket, DataManager dataManager);
+void printItemType(SOCKET& clientSocket, DataManager& dataManager);
 
 
 int main()
@@ -149,9 +151,9 @@ bool execute(SOCKET& clientSocket, DataManager& dataManager, ItemManager& itemMa
 	case 2:
 		printItemList(clientSocket, dataManager, itemManager);
 		return true;
-	//case 3:
-	//	addStock(clientSocket, dataManager, itemManager, stockManager, buffer);
-	//	return true;
+	case 3:
+		addStock(clientSocket, dataManager, itemManager, stockManager, buffer);
+		return true;
 	//case 4:
 	//	reduceStock(clientSocket, dataManager, stockManager, buffer);
 	//	return true;
@@ -167,8 +169,11 @@ bool execute(SOCKET& clientSocket, DataManager& dataManager, ItemManager& itemMa
 }
 
 // TODO: 서버에서 제공하는 API 목록으로 개선 필요.
-void menus(SOCKET& clientSocket, DataManager& dataManager, ItemManager& itemManager)
-{
+void menus(
+	SOCKET& clientSocket, 
+	DataManager& dataManager, 
+	ItemManager& itemManager
+) {
 	std::string menuStr[] = {
 		"1. 아이템 추가", 
 		"2. 아이템 삭제",
@@ -190,7 +195,7 @@ void menus(SOCKET& clientSocket, DataManager& dataManager, ItemManager& itemMana
 	dataManager.sendToClient(clientSocket, res);
 }
 
-void printItemType(SOCKET& clientSocket, DataManager dataManager)
+void printItemType(SOCKET& clientSocket, DataManager& dataManager)
 {
 	std::vector<std::string> itemTypeStr = ItemTypeHelper::getAllItemInfosToString();
 	std::string msg = "success";
@@ -209,7 +214,7 @@ void printItemType(SOCKET& clientSocket, DataManager dataManager)
 
 void addItem(
 	SOCKET& clientSocket, 
-	DataManager dataManager,
+	DataManager& dataManager,
 	ItemManager& itemManager, 
 	const char* buffer
 )
@@ -219,8 +224,9 @@ void addItem(
 	req.deserialize(buffer);
 
 	if (itemManager.addItem(
-		req.getName(), 
-		static_cast<ItemType>(req.getItemType() - 1))
+			req.getName(), 
+			static_cast<ItemType>(req.getItemType() - 1)
+			)
 		) {
 		std::string msg = "아이템이 추가되었습니다.\n";
 		res = AddItemResponse(true, msg);
@@ -259,8 +265,11 @@ void addItem(
 //	}
 //}
 //
-void printItemList(SOCKET& clientSocket, DataManager dataManager, ItemManager& itemManager)
-{
+void printItemList(
+	SOCKET& clientSocket, 
+	DataManager& dataManager, 
+	ItemManager& itemManager
+) {
 	std::string itemListStr = itemManager.itemListToString();
 	std::string msg = "success";
 
@@ -268,36 +277,42 @@ void printItemList(SOCKET& clientSocket, DataManager dataManager, ItemManager& i
 	dataManager.sendToClient(clientSocket, res);
 }
 
-//void addStock(SOCKET& clientSocket, ItemManager& itemManager, StockManager& stockManager, const char* dataPtr)
-//{
-//	unsigned int itemId;
-//	unsigned int count;
-//
-//	memcpy(&itemId, dataPtr, sizeof(itemId));
-//	memcpy(&count, dataPtr + sizeof(itemId), sizeof(count));
-//
-//	std::string msg;
-//
-//	shared_ptr<Item> item = itemManager.findItemById(itemId);
-//	if (item == nullptr)
-//	{
-//		msg = "아이템이 존재하지 않습니다\n";
-//		printFromSocket(clientSocket, 0, msg);
-//		return;
-//	}
-//
-//	if (stockManager.addStock(itemId, count))
-//	{
-//		msg = "재고가 늘어났습니다.\n";
-//		printFromSocket(clientSocket, 0, msg);
-//	}
-//	else
-//	{
-//		msg = "재고를 추가할 수 없습니다.\n";
-//		printFromSocket(clientSocket, 0, msg);
-//	}
-//}
-//
+void addStock(
+	SOCKET& clientSocket, 
+	DataManager& dataManager,
+	ItemManager& itemManager, 
+	StockManager& stockManager, 
+	const char* buffer
+) {
+	AddStockRequest req;
+	AddStockResponse res;
+	req.deserialize(buffer);
+
+	std::string msg;
+
+	shared_ptr<Item> item = itemManager.findItemById(req.getItemId());
+	if (item == nullptr)
+	{
+		msg = "아이템이 존재하지 않습니다\n";
+		res = AddStockResponse(true, msg);
+		dataManager.sendToClient(clientSocket, res);
+		return;
+	}
+
+	if (stockManager.addStock(req.getItemId(), req.getCount()))
+	{
+		msg = "재고가 늘어났습니다.\n";
+		res = AddStockResponse(true, msg);
+		dataManager.sendToClient(clientSocket, res);
+	}
+	else
+	{
+		msg = "재고를 추가할 수 없습니다.\n";
+		res = AddStockResponse(true, msg);
+		dataManager.sendToClient(clientSocket, res);
+	}
+}
+
 //void reduceStock(SOCKET& clientSocket, StockManager& stockManager, const char* dataPtr)
 //{
 //	unsigned int itemId;
