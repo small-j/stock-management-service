@@ -34,11 +34,6 @@
 using namespace std;
 
 #define PORT 4578
-#define PACKET_SIZE 1024
-
-#define REQ_COMMAND_SIZE 2
-#define RES_STATUS_SIZE 2
-#define RES_MESSAGE_SIZE 90
 
 int8_t DESTROY_CONNECTION_METHOD = -1;
 
