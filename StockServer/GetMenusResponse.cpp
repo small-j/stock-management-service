@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "GetMenusResponse.h"
 
 std::string GetMenusResponse::toString() {
@@ -10,7 +11,7 @@ std::string GetMenusResponse::toString() {
 
 int GetMenusResponse::serialize(char* buffer) {
 	int offset = __super::serialize(buffer);
-
+	
 	char delimiter = ',';
 	int delimiterSize = sizeof(delimiter);
 

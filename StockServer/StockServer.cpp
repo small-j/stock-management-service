@@ -14,7 +14,12 @@
 #include "ItemManager.h"
 #include "StockManager.h"
 #include "Item.h"
-#include "Stock.h" // Stock의 정의가 필요하므로 추가
+#include "Stock.h"
+#include "DataManager.h"
+#include "RequestCommand.h"
+#include "BaseRequest.h"
+#include "BaseResponse.h"
+#include "GetMenusResponse.h"
 
 using namespace std;
 
@@ -26,17 +31,14 @@ using namespace std;
 #define RES_MESSAGE_SIZE 90
 
 int8_t DESTROY_CONNECTION_METHOD = -1;
-int8_t PRINT_METHOD = 1;
-int8_t INPUT_METHOD = 2;
-int8_t PRINT_AND_INPUT_METHOD = 3;
 
 void ErrorHandler(const string& errMsg);
 void run(SOCKET& clientSocket);
 void printFromSocket(SOCKET& clientSocket, short status, string& msg, std::optional<std::string_view> data);
 
-bool execute(SOCKET& clientSocket, short command, ItemManager& itemManager, StockManager& stockManager, const char* dataPtr);
+bool execute(SOCKET& clientSocket, DataManager& dataManager, ItemManager& itemManager, StockManager& stockManager, BaseRequest& req, const char* buffer);
 
-void menus(SOCKET& clientSocket, ItemManager& itemManager);
+void menus(SOCKET& clientSocket, DataManager& dataManager, ItemManager& itemManager);
 void addItem(SOCKET& clientSocket, ItemManager& itemManager, const char* dataPtr);
 void removeItem(SOCKET& clientSocket, ItemManager& itemManager, StockManager& stockManager, const char* dataPtr);
 void printItemList(SOCKET& clientSocket, ItemManager& itemManager);
@@ -102,20 +104,25 @@ void ErrorHandler(const string& errMsg)
 void run(SOCKET& clientSocket) {
 	char buffer[PACKET_SIZE] = {};
 
+	DataManager dataManager;
 	ItemManager itemManager;
 	StockManager stockManager;
 
-	while (INT32 res = recv(clientSocket, buffer, PACKET_SIZE, 0))
+	while (dataManager.recieveFromClient(clientSocket, buffer))
 	{
-		if (res == -1) break;
+		BaseRequest req(Request::Command::UNKNOWN);
+		req.deserialize(buffer);
 
-		short command;
+		/*short command;
 		memcpy(&command, buffer, sizeof(REQ_COMMAND_SIZE));
 		std::string data(buffer + REQ_COMMAND_SIZE);
-		const char* dataPtr = buffer + REQ_COMMAND_SIZE;
+		const char* dataPtr = buffer + REQ_COMMAND_SIZE;*/
 
-		if (execute(clientSocket, command, itemManager, stockManager, dataPtr) == false)
+		bool exeResult = execute(clientSocket, dataManager, itemManager, stockManager, req, buffer);
+		
+		if (exeResult == false)
 		{
+			// TODO: 아래 방식 개선 필요.
 			char response[PACKET_SIZE];
 			memset(response, '\0', PACKET_SIZE);
 			memcpy(response, &DESTROY_CONNECTION_METHOD, sizeof(DESTROY_CONNECTION_METHOD));
@@ -126,69 +133,39 @@ void run(SOCKET& clientSocket) {
 	}
 }
 
-void printFromSocket(SOCKET& clientSocket, short status, std::string& msg, std::optional<std::string_view> data = std::nullopt)
+bool execute(SOCKET& clientSocket, DataManager& dataManager, ItemManager& itemManager, StockManager& stockManager, BaseRequest& req, const char* buffer)
 {
-	//int maxDataSize = PACKET_SIZE - RES_STATUS_SIZE - RES_MESSAGE_SIZE;
 
-	//if (data != std::nullopt 
-	//	&& data.value().size() > maxDataSize) {
-	//	throw std::out_of_range("데이터 크기가 버퍼 용량을 초과했습니다."); // 질문
-	//}
-
-	int offset = 0;
-	char sendBuffer[PACKET_SIZE];
-	memset(sendBuffer, '\0', PACKET_SIZE);
-
-	memcpy(sendBuffer, &status, RES_STATUS_SIZE);
-	offset += RES_STATUS_SIZE;
-
-	memcpy(sendBuffer + offset, msg.c_str(), msg.length());
-	offset += RES_MESSAGE_SIZE;
-
-	if (data.has_value()) {
-		int dataSize = static_cast<int>(data.value().size());
-
-		memcpy(sendBuffer + offset, &dataSize, sizeof(dataSize));
-		offset += sizeof(dataSize);
-
-		memcpy(sendBuffer + offset, data.value().data(), dataSize);
-		offset += dataSize;
-	}
-	
-	send(clientSocket, sendBuffer, PACKET_SIZE, 0);
-}
-
-bool execute(SOCKET& clientSocket, short command, ItemManager& itemManager, StockManager& stockManager, const char* dataPtr)
-{
-	switch (command)
+	switch (req.getCommand())
 	{
-	case 0:
-		addItem(clientSocket, itemManager, dataPtr);
-		return true;
-	case 1:
-		removeItem(clientSocket, itemManager, stockManager, dataPtr);
-		return true;
-	case 2:
-		printItemList(clientSocket, itemManager);
-		return true;
-	case 3:
-		addStock(clientSocket, itemManager, stockManager, dataPtr);
-		return true;
-	case 4:
-		reduceStock(clientSocket, stockManager, dataPtr);
-		return true;
-	case 5:
-		printItemType(clientSocket);
-		return true;
+	//case 0:
+	//	addItem(clientSocket, dataManager,  itemManager, buffer);
+	//	return true;
+	//case 1:
+	//	removeItem(clientSocket, dataManager, itemManager, stockManager, buffer);
+	//	return true;
+	//case 2:
+	//	printItemList(clientSocket, dataManager, itemManager);
+	//	return true;
+	//case 3:
+	//	addStock(clientSocket, dataManager, itemManager, stockManager, buffer);
+	//	return true;
+	//case 4:
+	//	reduceStock(clientSocket, dataManager, stockManager, buffer);
+	//	return true;
+	//case 5:
+	//	printItemType(clientSocket, dataManager);
+	//	return true;
 	case 6:
-		menus(clientSocket, itemManager);
+		menus(clientSocket, dataManager, itemManager);
 		return true;
 	default:
 		return false;
 	}
 }
 
-void menus(SOCKET& clientSocket, ItemManager& itemManager)
+// TODO: 서버에서 제공하는 API 목록으로 개선 필요.
+void menus(SOCKET& clientSocket, DataManager& dataManager, ItemManager& itemManager)
 {
 	std::string menuStr[] = {
 		"1. 아이템 추가", 
@@ -198,8 +175,6 @@ void menus(SOCKET& clientSocket, ItemManager& itemManager)
 		"5. 재고 삭제",
 		"그 외. 종료"
 	};
-
-	std::string msg = "success";
 	string datas;
 	int len = std::size(menuStr);
 	for (int i = 0; i < len; i++)
@@ -208,133 +183,126 @@ void menus(SOCKET& clientSocket, ItemManager& itemManager)
 		if (i != len - 1) datas += ',';
 	}
 
-	printFromSocket(clientSocket, 1, msg, datas);
-}
-
-void printItemType(SOCKET& clientSocket)
-{
-	std::vector<std::string> itemTypeStr = ItemTypeHelper::getAllItemInfosToString();
 	std::string msg = "success";
-	
-	string datas;
-	int len = itemTypeStr.size();
-	for (int i = 0; i < len; i++)
-	{
-		datas += itemTypeStr[i];
-		if (i != len - 1) datas += ',';
-	}
-	printFromSocket(clientSocket, 1, msg, datas);
+	GetMenusResponse res(true, msg, datas);
+	dataManager.sendToClient(clientSocket, res);
 }
 
-void addItem(SOCKET& clientSocket, ItemManager& itemManager, const char* dataPtr)
-{
-	int offset = 0;
+//void printItemType(SOCKET& clientSocket)
+//{
+//	std::vector<std::string> itemTypeStr = ItemTypeHelper::getAllItemInfosToString();
+//	std::string msg = "success";
+//	
+//	string datas;
+//	int len = itemTypeStr.size();
+//	for (int i = 0; i < len; i++)
+//	{
+//		datas += itemTypeStr[i];
+//		if (i != len - 1) datas += ',';
+//	}
+//	printFromSocket(clientSocket, 1, msg, datas);
+//}
 
-	int nameLen = 0;
-	memcpy(&nameLen, dataPtr + offset, sizeof(int));
-	offset += sizeof(nameLen);
-
-	string name(dataPtr + offset, nameLen);
-	offset += nameLen;
-
-	int itemType = -1; // 4byte
-	memcpy(&itemType, dataPtr + offset, sizeof(itemType));
-
-	if (itemManager.addItem(name, static_cast<ItemType>(itemType - 1)))
-	{
-		std::string msg = "아이템이 추가되었습니다.\n";
-		printFromSocket(clientSocket, 1, msg);
-		return;
-	}
-
-	std::string msg = "아이템 추가에 실패했습니다.\n";
-	printFromSocket(clientSocket, 0, msg);
-}
-
-void removeItem(SOCKET& clientSocket, ItemManager& itemManager, StockManager& stockManager, const char* dataPtr)
-{
-	unsigned int itemId = Item::INVALID_ID;
-	memcpy(&itemId, dataPtr, sizeof(itemId));
-	
-	std::string msg;
-	shared_ptr<Stock> stock = stockManager.findStockByItemId(itemId);
-	if (stock != nullptr)
-	{
-		msg = "해당 아이템은 재고가 남아있어 삭제할 수 없습니다.\n";
-		printFromSocket(clientSocket, 0, msg);
-		return;
-	}
-
-	if (itemManager.removeItem(itemId))
-	{
-		msg = std::to_string(itemId) + "아이템이 삭제되었습니다.\n";
-		printFromSocket(clientSocket, 1, msg);
-	}
-	else
-	{
-		msg = "아이템을 삭제할 수 없습니다.\n";
-		printFromSocket(clientSocket, 0, msg);
-	}
-}
-
-void printItemList(SOCKET& clientSocket, ItemManager& itemManager)
-{
-	std::string itemListStr = itemManager.itemListToString();
-	std::string msg = "success";
-	printFromSocket(clientSocket, 1, msg, itemListStr);
-}
-
-void addStock(SOCKET& clientSocket, ItemManager& itemManager, StockManager& stockManager, const char* dataPtr)
-{
-	unsigned int itemId;
-	unsigned int count;
-
-	memcpy(&itemId, dataPtr, sizeof(itemId));
-	memcpy(&count, dataPtr + sizeof(itemId), sizeof(count));
-
-	std::string msg;
-
-	shared_ptr<Item> item = itemManager.findItemById(itemId);
-	if (item == nullptr)
-	{
-		msg = "아이템이 존재하지 않습니다\n";
-		printFromSocket(clientSocket, 0, msg);
-		return;
-	}
-
-	if (stockManager.addStock(itemId, count))
-	{
-		msg = "재고가 늘어났습니다.\n";
-		printFromSocket(clientSocket, 0, msg);
-	}
-	else
-	{
-		msg = "재고를 추가할 수 없습니다.\n";
-		printFromSocket(clientSocket, 0, msg);
-	}
-}
-
-void reduceStock(SOCKET& clientSocket, StockManager& stockManager, const char* dataPtr)
-{
-	unsigned int itemId;
-	unsigned int count;
-
-	memcpy(&itemId, dataPtr, sizeof(itemId));
-	memcpy(&count, dataPtr + sizeof(itemId), sizeof(count));
-
-	std::string msg;
-
-	if (stockManager.reduceStock(itemId, count))
-	{
-		msg = "재고가 삭제되었습니다.\n";
-		printFromSocket(clientSocket, 1, msg);
-	}
-	else
-	{
-		msg = "재고 삭제에 실패했습니다.\n";
-		printFromSocket(clientSocket, 0, msg);
-	}
-}
+//void addItem(SOCKET& clientSocket, ItemManager& itemManager, const char* buffer)
+//{
+//	req
+//		res
+//
+//	if (itemManager.addItem(name, static_cast<ItemType>(itemType - 1)))
+//	{
+//		std::string msg = "아이템이 추가되었습니다.\n";
+//		printFromSocket(clientSocket, 1, msg);
+//		return;
+//	}
+//
+//	std::string msg = "아이템 추가에 실패했습니다.\n";
+//	printFromSocket(clientSocket, 0, msg);
+//}
+//
+//void removeItem(SOCKET& clientSocket, ItemManager& itemManager, StockManager& stockManager, const char* dataPtr)
+//{
+//	unsigned int itemId = Item::INVALID_ID;
+//	memcpy(&itemId, dataPtr, sizeof(itemId));
+//	
+//	std::string msg;
+//	shared_ptr<Stock> stock = stockManager.findStockByItemId(itemId);
+//	if (stock != nullptr)
+//	{
+//		msg = "해당 아이템은 재고가 남아있어 삭제할 수 없습니다.\n";
+//		printFromSocket(clientSocket, 0, msg);
+//		return;
+//	}
+//
+//	if (itemManager.removeItem(itemId))
+//	{
+//		msg = std::to_string(itemId) + "아이템이 삭제되었습니다.\n";
+//		printFromSocket(clientSocket, 1, msg);
+//	}
+//	else
+//	{
+//		msg = "아이템을 삭제할 수 없습니다.\n";
+//		printFromSocket(clientSocket, 0, msg);
+//	}
+//}
+//
+//void printItemList(SOCKET& clientSocket, ItemManager& itemManager)
+//{
+//	std::string itemListStr = itemManager.itemListToString();
+//	std::string msg = "success";
+//	printFromSocket(clientSocket, 1, msg, itemListStr);
+//}
+//
+//void addStock(SOCKET& clientSocket, ItemManager& itemManager, StockManager& stockManager, const char* dataPtr)
+//{
+//	unsigned int itemId;
+//	unsigned int count;
+//
+//	memcpy(&itemId, dataPtr, sizeof(itemId));
+//	memcpy(&count, dataPtr + sizeof(itemId), sizeof(count));
+//
+//	std::string msg;
+//
+//	shared_ptr<Item> item = itemManager.findItemById(itemId);
+//	if (item == nullptr)
+//	{
+//		msg = "아이템이 존재하지 않습니다\n";
+//		printFromSocket(clientSocket, 0, msg);
+//		return;
+//	}
+//
+//	if (stockManager.addStock(itemId, count))
+//	{
+//		msg = "재고가 늘어났습니다.\n";
+//		printFromSocket(clientSocket, 0, msg);
+//	}
+//	else
+//	{
+//		msg = "재고를 추가할 수 없습니다.\n";
+//		printFromSocket(clientSocket, 0, msg);
+//	}
+//}
+//
+//void reduceStock(SOCKET& clientSocket, StockManager& stockManager, const char* dataPtr)
+//{
+//	unsigned int itemId;
+//	unsigned int count;
+//
+//	memcpy(&itemId, dataPtr, sizeof(itemId));
+//	memcpy(&count, dataPtr + sizeof(itemId), sizeof(count));
+//
+//	std::string msg;
+//
+//	if (stockManager.reduceStock(itemId, count))
+//	{
+//		msg = "재고가 삭제되었습니다.\n";
+//		printFromSocket(clientSocket, 1, msg);
+//	}
+//	else
+//	{
+//		msg = "재고 삭제에 실패했습니다.\n";
+//		printFromSocket(clientSocket, 0, msg);
+//	}
+//}
 
 // TODO
 //void getStockList()
