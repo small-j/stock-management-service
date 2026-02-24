@@ -23,6 +23,7 @@
 #include "GetItemTypesResponse.h"
 #include "AddItemRequest.h"
 #include "AddItemResponse.h"
+#include "PrintItemResponse.h"
 
 using namespace std;
 
@@ -42,7 +43,7 @@ bool execute(SOCKET& clientSocket, DataManager& dataManager, ItemManager& itemMa
 void menus(SOCKET& clientSocket, DataManager& dataManager, ItemManager& itemManager);
 void addItem(SOCKET& clientSocket, DataManager dataManager, ItemManager& itemManager, const char* dataPtr);
 void removeItem(SOCKET& clientSocket, ItemManager& itemManager, StockManager& stockManager, const char* dataPtr);
-void printItemList(SOCKET& clientSocket, ItemManager& itemManager);
+void printItemList(SOCKET& clientSocket, DataManager dataManager, ItemManager& itemManager);
 void addStock(SOCKET& clientSocket, ItemManager& itemManager, StockManager& stockManager, const char* dataPtr);
 void reduceStock(SOCKET& clientSocket, StockManager& stockManager, const char* dataPtr);
 void printItemType(SOCKET& clientSocket, DataManager dataManager);
@@ -145,9 +146,9 @@ bool execute(SOCKET& clientSocket, DataManager& dataManager, ItemManager& itemMa
 	//case 1:
 	//	removeItem(clientSocket, dataManager, itemManager, stockManager, buffer);
 	//	return true;
-	//case 2:
-	//	printItemList(clientSocket, dataManager, itemManager);
-	//	return true;
+	case 2:
+		printItemList(clientSocket, dataManager, itemManager);
+		return true;
 	//case 3:
 	//	addStock(clientSocket, dataManager, itemManager, stockManager, buffer);
 	//	return true;
@@ -195,7 +196,7 @@ void printItemType(SOCKET& clientSocket, DataManager dataManager)
 	std::string msg = "success";
 	
 	string datas;
-	int len = itemTypeStr.size();
+	int len = static_cast<int>(itemTypeStr.size());
 	for (int i = 0; i < len; i++)
 	{
 		datas += itemTypeStr[i];
@@ -258,13 +259,15 @@ void addItem(
 //	}
 //}
 //
-//void printItemList(SOCKET& clientSocket, ItemManager& itemManager)
-//{
-//	std::string itemListStr = itemManager.itemListToString();
-//	std::string msg = "success";
-//	printFromSocket(clientSocket, 1, msg, itemListStr);
-//}
-//
+void printItemList(SOCKET& clientSocket, DataManager dataManager, ItemManager& itemManager)
+{
+	std::string itemListStr = itemManager.itemListToString();
+	std::string msg = "success";
+
+	PrintItemResponse res(true, msg, itemListStr);
+	dataManager.sendToClient(clientSocket, res);
+}
+
 //void addStock(SOCKET& clientSocket, ItemManager& itemManager, StockManager& stockManager, const char* dataPtr)
 //{
 //	unsigned int itemId;
