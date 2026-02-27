@@ -4,13 +4,13 @@ struct Request {
 	enum Command : short
 	{
 		UNKNOWN = -1,
-		ADD_ITEM = 0,
+		ADD_ITEM = 1001,
 		REMOVE_ITEM,
 		PRINT_ITEM,
-		ADD_STOCK,
-		REDUCE_STOCK,
 		GET_ITEM_TYPE,
-		GET_MENU,
-		COUNT
+		ADD_STOCK = 2001,
+		REDUCE_STOCK,
+		GET_MENU = 3001,
+		//COUNT
 	};
 };

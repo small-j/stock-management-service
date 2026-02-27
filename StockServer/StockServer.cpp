@@ -141,25 +141,25 @@ bool execute(SOCKET& clientSocket, DataManager& dataManager, ItemManager& itemMa
 
 	switch (req.getCommand())
 	{
-	case 0:
+	case Request::Command::ADD_ITEM:
 		addItem(clientSocket, dataManager,  itemManager, buffer);
 		return true;
-	case 1:
+	case Request::Command::REMOVE_ITEM:
 		removeItem(clientSocket, dataManager, itemManager, stockManager, buffer);
 		return true;
-	case 2:
+	case Request::Command::PRINT_ITEM:
 		printItemList(clientSocket, dataManager, itemManager);
 		return true;
-	case 3:
+	case Request::Command::ADD_STOCK:
 		addStock(clientSocket, dataManager, itemManager, stockManager, buffer);
 		return true;
-	case 4:
+	case Request::Command::REDUCE_STOCK:
 		reduceStock(clientSocket, dataManager, stockManager, buffer);
 		return true;
-	case 5:
+	case Request::Command::GET_ITEM_TYPE:
 		printItemType(clientSocket, dataManager);
 		return true;
-	case 6:
+	case Request::Command::GET_MENU:
 		menus(clientSocket, dataManager, itemManager);
 		return true;
 	default:
