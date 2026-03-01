@@ -32,4 +32,5 @@ bool Stock::decreaseCount(const unsigned int count) {
 bool Stock::isValid() const {
 	if (_itemId == Item::INVALID_ID) return false;
 	if (_count > COUNT_MAX) return false;
+	return true;
 }
