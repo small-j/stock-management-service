@@ -39,14 +39,14 @@ int8_t DESTROY_CONNECTION_METHOD = -1;
 
 void ErrorHandler(const string& errMsg);
 void run(SOCKET& clientSocket);
-bool execute(SOCKET& clientSocket, DataManager& dataManager, ItemManager& itemManager, StockManager& stockManager, BaseRequest& req, const char* buffer);
+bool execute(SOCKET& clientSocket, DataManager& dataManager, ItemManager& itemManager, StockManager& stockManager, std::shared_ptr<BaseRequest>& req);
 
 void menus(SOCKET& clientSocket, DataManager& dataManager, ItemManager& itemManager);
-void addItem(SOCKET& clientSocket, DataManager& dataManager, ItemManager& itemManager, const char* dataPtr);
-void removeItem(SOCKET& clientSocket, DataManager& dataManager, ItemManager& itemManager, StockManager& stockManager, const char* dataPtr);
+void addItem(SOCKET& clientSocket, DataManager& dataManager, ItemManager& itemManager, std::shared_ptr<BaseRequest>& req);
+void removeItem(SOCKET& clientSocket, DataManager& dataManager, ItemManager& itemManager, StockManager& stockManager, std::shared_ptr<BaseRequest>& req);
 void printItemList(SOCKET& clientSocket, DataManager& dataManager, ItemManager& itemManager);
-void addStock(SOCKET& clientSocket, DataManager& dataManager, ItemManager& itemManager, StockManager& stockManager, const char* dataPtr);
-void reduceStock(SOCKET& clientSocket, DataManager& dataManager, StockManager& stockManager, const char* dataPtr);
+void addStock(SOCKET& clientSocket, DataManager& dataManager, ItemManager& itemManager, StockManager& stockManager, std::shared_ptr<BaseRequest>& req);
+void reduceStock(SOCKET& clientSocket, DataManager& dataManager, StockManager& stockManager, std::shared_ptr<BaseRequest>& req);
 void printItemType(SOCKET& clientSocket, DataManager& dataManager);
 
 
@@ -65,9 +65,6 @@ int main()
     listenSocketAddr.sin_port = htons(PORT); // 요청을 수신할 소켓 프로세스가 사용할 포트번호
     listenSocketAddr.sin_addr.s_addr = htonl(INADDR_ANY); // 어떤 주소든 받는다.
     
-
-    // 아래부터 예외처리 안해도 되나?
-
     // 소켓을 특정 주소 및 포트와 연결
     bind(listenSocket, (SOCKADDR*)&listenSocketAddr, sizeof(listenSocketAddr));
     // 연결 수신 대기 함수:listen
@@ -76,14 +73,7 @@ int main()
     // 연결 클라이언트 정보 수신할 구조체
     SOCKADDR_IN acceptSocketAddr = {};
     int acceptSocketAddrSize = sizeof(acceptSocketAddr);
-    // accept : 요청 연결 수락
-    // 연결 수락되면서 연결된 클라이언트의 주소 정보도 기록됨.
-    // 두번째 인수가 가리키는 버퍼의 크기를 지정?
-    // accept는 들어오는 연결을 처리하는 소켓의 핸들을 반환한다. (새로 만들어진 소켓)
-    // accept 함수가 실행되는 순간 프로그램의 실행이 그 지점에서 멈춤.
-	// 대기열(Backlog)에 연결 요청이 들어올 때까지 CPU 자원을 거의 사용하지 않으면서 잠을 자는 상태가 됨.
-	// 클라이언트가 connect를 호출하면(이 프로그램의 프로세스가 연결된 포트로) 
-	// 운영체제가 이 연결 요청을 수락하고, accept 함수가 반환됨.
+
 
 	SOCKET clientSocket = accept(listenSocket, (SOCKADDR*)&acceptSocketAddr, &acceptSocketAddrSize);
 	cout << "클라이언트가 연결되었습니다.\n";
@@ -105,23 +95,19 @@ void ErrorHandler(const string& errMsg)
 }
 
 void run(SOCKET& clientSocket) {
-	char buffer[PACKET_SIZE] = {};
-
 	DataManager dataManager;
 	ItemManager itemManager;
 	StockManager stockManager;
 
-	while (dataManager.recieveFromClient(clientSocket, buffer))
+	while (true)
 	{
-		BaseRequest req(Request::Command::UNKNOWN);
-		req.deserialize(buffer);
+		std::shared_ptr<BaseRequest> req = dataManager.recieveFromClient(clientSocket);
+		if (req == nullptr) {
+			// log 처리
+			break;
+		}
 
-		/*short command;
-		memcpy(&command, buffer, sizeof(REQ_COMMAND_SIZE));
-		std::string data(buffer + REQ_COMMAND_SIZE);
-		const char* dataPtr = buffer + REQ_COMMAND_SIZE;*/
-
-		bool exeResult = execute(clientSocket, dataManager, itemManager, stockManager, req, buffer);
+		bool exeResult = execute(clientSocket, dataManager, itemManager, stockManager, req);
 		
 		if (exeResult == false)
 		{
@@ -136,25 +122,30 @@ void run(SOCKET& clientSocket) {
 	}
 }
 
-bool execute(SOCKET& clientSocket, DataManager& dataManager, ItemManager& itemManager, StockManager& stockManager, BaseRequest& req, const char* buffer)
+bool execute(
+	SOCKET& clientSocket, 
+	DataManager& dataManager, 
+	ItemManager& itemManager, 
+	StockManager& stockManager, 
+	std::shared_ptr<BaseRequest>&req)
 {
 
-	switch (req.getCommand())
+	switch (req.get()->getCommand())
 	{
 	case Request::Command::ADD_ITEM:
-		addItem(clientSocket, dataManager,  itemManager, buffer);
+		addItem(clientSocket, dataManager,  itemManager, req);
 		return true;
 	case Request::Command::REMOVE_ITEM:
-		removeItem(clientSocket, dataManager, itemManager, stockManager, buffer);
+		removeItem(clientSocket, dataManager, itemManager, stockManager, req);
 		return true;
 	case Request::Command::PRINT_ITEM:
 		printItemList(clientSocket, dataManager, itemManager);
 		return true;
 	case Request::Command::ADD_STOCK:
-		addStock(clientSocket, dataManager, itemManager, stockManager, buffer);
+		addStock(clientSocket, dataManager, itemManager, stockManager, req);
 		return true;
 	case Request::Command::REDUCE_STOCK:
-		reduceStock(clientSocket, dataManager, stockManager, buffer);
+		reduceStock(clientSocket, dataManager, stockManager, req);
 		return true;
 	case Request::Command::GET_ITEM_TYPE:
 		printItemType(clientSocket, dataManager);
@@ -215,16 +206,14 @@ void addItem(
 	SOCKET& clientSocket, 
 	DataManager& dataManager,
 	ItemManager& itemManager, 
-	const char* buffer
-)
-{
-	AddItemRequest req;
+	std::shared_ptr<BaseRequest>& req
+) {
+	auto paredReq = std::dynamic_pointer_cast<AddItemRequest>(req);
 	AddItemResponse res;
-	req.deserialize(buffer);
 
 	if (itemManager.addItem(
-			req.getName(), 
-			static_cast<ItemType>(req.getItemType() - 1)
+		paredReq.get() ->getName(),
+			static_cast<ItemType>(paredReq.get()->getItemType() - 1)
 			)
 		) {
 		std::string msg = "아이템이 추가되었습니다.\n";
@@ -243,14 +232,13 @@ void removeItem(
 	DataManager& dataManager,
 	ItemManager& itemManager, 
 	StockManager& stockManager, 
-	const char* buffer
+	std::shared_ptr<BaseRequest>& req
 ) {
-	RemoveItemRequest req;
+	auto paredReq = std::dynamic_pointer_cast<RemoveItemRequest>(req);
 	RemoveItemResponse res;
-	req.deserialize(buffer);
 	
 	std::string msg;
-	shared_ptr<Stock> stock = stockManager.findStockByItemId(req.getItemId());
+	shared_ptr<Stock> stock = stockManager.findStockByItemId(paredReq.get()->getItemId());
 	if (stock != nullptr)
 	{
 		msg = "해당 아이템은 재고가 남아있어 삭제할 수 없습니다.\n";
@@ -259,9 +247,9 @@ void removeItem(
 		return;
 	}
 
-	if (itemManager.removeItem(req.getItemId()))
+	if (itemManager.removeItem(paredReq.get()->getItemId()))
 	{
-		msg = std::to_string(req.getItemId()) + " 아이템이 삭제되었습니다.\n";
+		msg = std::to_string(paredReq.get()->getItemId()) + " 아이템이 삭제되었습니다.\n";
 		res = RemoveItemResponse(true, msg);
 	}
 	else
@@ -290,15 +278,14 @@ void addStock(
 	DataManager& dataManager,
 	ItemManager& itemManager, 
 	StockManager& stockManager, 
-	const char* buffer
+	std::shared_ptr<BaseRequest>& req
 ) {
-	AddStockRequest req;
+	auto paredReq = std::dynamic_pointer_cast<AddStockRequest>(req);
 	AddStockResponse res;
-	req.deserialize(buffer);
 
 	std::string msg;
 
-	shared_ptr<Item> item = itemManager.findItemById(req.getItemId());
+	shared_ptr<Item> item = itemManager.findItemById(paredReq.get()->getItemId());
 	if (item == nullptr)
 	{
 		msg = "아이템이 존재하지 않습니다\n";
@@ -307,7 +294,7 @@ void addStock(
 		return;
 	}
 
-	if (stockManager.addStock(req.getItemId(), req.getCount()))
+	if (stockManager.addStock(paredReq.get()->getItemId(), paredReq.get()->getCount()))
 	{
 		msg = "재고가 늘어났습니다.\n";
 		res = AddStockResponse(true, msg);
@@ -325,15 +312,14 @@ void reduceStock(
 	SOCKET& clientSocket,
 	DataManager& dataManager, 
 	StockManager& stockManager, 
-	const char* buffer
+	std::shared_ptr<BaseRequest>& req
 ) {
-	ReduceStockRequest req;
+	auto paredReq = std::dynamic_pointer_cast<ReduceStockRequest>(req);
 	ReduceStockResponse res;
-	req.deserialize(buffer);
 
 	std::string msg;
 
-	if (stockManager.reduceStock(req.getItemId(), req.getCount()))
+	if (stockManager.reduceStock(paredReq.get()->getItemId(), paredReq.get()->getCount()))
 	{
 		msg = "재고가 삭제되었습니다.\n";
 		res = ReduceStockResponse(true, msg);

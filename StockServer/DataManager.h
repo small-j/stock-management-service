@@ -12,5 +12,6 @@ class BaseResponse;
 class DataManager {
 public:
 	void sendToClient(SOCKET& socket, BaseResponse& res);
-	bool recieveFromClient(SOCKET& socket, char* buffer);
+	std::shared_ptr<BaseRequest> recieveFromClient(SOCKET& socket);
+	std::unique_ptr<BaseRequest> createRequestFromCommand(short cmd);
 };

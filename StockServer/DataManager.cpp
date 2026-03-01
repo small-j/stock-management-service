@@ -1,10 +1,20 @@
 #include "pch.h"
 #include <iostream>
+#include <cassert>
 #include "DataManager.h"
 #include "BaseRequest.h"
 #include "BaseResponse.h"
 #include "RequestCommand.h"
 #include <charconv>
+#include "AddItemRequest.h"
+#include "RemoveItemRequest.h"
+#include "PrintItemRequest.h"
+#include "GetItemTypesRequest.h"
+#include "AddStockRequest.h"
+#include "ReduceStockRequest.h"
+#include "GetMenusRequest.h"
+
+#include<queue>
 
 // 나중에는 send, receive 나누고 queue에 각각 넣어줄 것이다.
 void DataManager::sendToClient(SOCKET& socket, BaseResponse& res) {
@@ -21,11 +31,49 @@ void DataManager::sendToClient(SOCKET& socket, BaseResponse& res) {
 	send(socket, sendBuffer, PACKET_SIZE, 0);
 }
 
-bool DataManager::recieveFromClient(SOCKET& socket, char* recvBuffer) {
+std::shared_ptr<BaseRequest> DataManager::recieveFromClient(SOCKET& socket) {
 	// char recvBuffer[PACKET_SIZE];
+	char recvBuffer[PACKET_SIZE];
 	memset(recvBuffer, '\0', PACKET_SIZE);
-	INT32 res = recv(socket, recvBuffer, PACKET_SIZE, 0);
 
-	return res != -1;
+	INT32 result = recv(socket, recvBuffer, PACKET_SIZE, 0);
+
+	if (result == -1 || result == 0) return nullptr;
+
+	BaseRequest baseReq(Request::Command::UNKNOWN);
+	baseReq.deserialize(recvBuffer);
+
+	std::shared_ptr<BaseRequest> req = createRequestFromCommand(baseReq.getCommand());
+	if (!req) {
+		// TODO: log
+		return nullptr;
+	}
+
+	if (req->deserialize(recvBuffer) == 0) {
+		return nullptr;
+	}
+
+	return req;
 }
 
+std::unique_ptr<BaseRequest> DataManager::createRequestFromCommand(short cmd) {
+	switch (cmd) {
+	case Request::Command::ADD_ITEM:
+		return std::make_unique<AddItemRequest>();
+	case Request::Command::REMOVE_ITEM :
+		return std::make_unique<RemoveItemRequest>();
+	case Request::Command::GET_ITEM_TYPE:
+		return std::make_unique<GetItemTypesRequest>();
+	case Request::Command::PRINT_ITEM:
+		return std::make_unique<AddItemRequest>();
+	case Request::Command::ADD_STOCK:
+		return std::make_unique<AddStockRequest>();
+	case Request::Command::REDUCE_STOCK:
+		return std::make_unique<ReduceStockRequest>();
+	case Request::Command::GET_MENU:
+		return std::make_unique<GetMenusRequest>();
+	default:
+		assert(false);
+		return nullptr;
+	}
+}

@@ -13,7 +13,7 @@ int GetMenusResponse::serialize(char* buffer) {
 	int offset = __super::serialize(buffer);
 	
 	char delimiter = ',';
-	int delimiterSize = sizeof(delimiter);
+	int delimiterSize = static_cast<int>(sizeof(delimiter));
 
 	int strLength = (_menus.size() - 1) * delimiterSize;
 	for (std::string& menu : _menus) {
