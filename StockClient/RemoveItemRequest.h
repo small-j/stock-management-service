@@ -18,6 +18,6 @@ private:
 public:
 	unsigned int getItemId() const { return _itemId; }
 
-	int serialize(char* buffer) override;
+	int serialize(char* buffer) const override;
 	int deserialize(const char* buffer) override;
 };

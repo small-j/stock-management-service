@@ -23,6 +23,6 @@ public:
 	std::string getName() const { return _name; }
 	int getItemType() const { return _itemType; }
 
-	int serialize(char* buffer) override;
+	int serialize(char* buffer) const override;
 	int deserialize(const char* buffer) override;
 };

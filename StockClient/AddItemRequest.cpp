@@ -1,6 +1,6 @@
 #include "AddItemRequest.h"
 
-int AddItemRequest::serialize(char* buffer) {
+int AddItemRequest::serialize(char* buffer) const {
 	int offset = __super::serialize(buffer);
 
 	int nameLen = static_cast<int>(_name.length());

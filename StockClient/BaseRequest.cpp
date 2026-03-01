@@ -1,7 +1,7 @@
 #include "BaseRequest.h"
 
-int BaseRequest::serialize(char* buffer) {
-	short command = getCommand();
+int BaseRequest::serialize(char* buffer) const {
+	const short command = getCommand();
 	int offset = 0;
 
 	memcpy(buffer + offset, &command, REQ_COMMAND_SIZE);

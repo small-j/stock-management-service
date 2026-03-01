@@ -1,6 +1,6 @@
 #include "ReduceStockRequest.h"
 
-int ReduceStockRequest::serialize(char* buffer) {
+int ReduceStockRequest::serialize(char* buffer) const {
 	int offset = __super::serialize(buffer);
 
 	memcpy(buffer + offset, &_itemId, sizeof(_itemId));

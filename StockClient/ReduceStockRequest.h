@@ -21,6 +21,6 @@ public:
 	unsigned int getItemId() const { return _itemId; }
 	unsigned int getCount() const { return _count; }
 
-	int serialize(char* buffer) override;
+	int serialize(char* buffer) const override;
 	int deserialize(const char* buffer) override;
 };

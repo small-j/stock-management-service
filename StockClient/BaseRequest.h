@@ -6,15 +6,15 @@
 
 class BaseRequest {
 public:
-	BaseRequest(const short command)
-		: _command(command) {}
+	BaseRequest(const short command) : _command(command) {}
+	//virtual ~BaseRequest() = default;
 
 protected:
 	short _command;
 
 public:
-	short getCommand() { return _command; }
+	short getCommand() const { return _command; }
 
-	virtual int serialize(char* buffer);
+	virtual int serialize(char* buffer) const;
 	virtual int deserialize(const char* buffer);
 };
