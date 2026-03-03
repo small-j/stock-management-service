@@ -56,22 +56,22 @@ std::shared_ptr<BaseRequest> DataManager::recieveFromClient(SOCKET& socket) {
 	return req;
 }
 
-std::unique_ptr<BaseRequest> DataManager::createRequestFromCommand(short cmd) {
+std::shared_ptr<BaseRequest> DataManager::createRequestFromCommand(short cmd) {
 	switch (cmd) {
 	case Request::Command::ADD_ITEM:
-		return std::make_unique<AddItemRequest>();
+		return std::make_shared<AddItemRequest>();
 	case Request::Command::REMOVE_ITEM :
-		return std::make_unique<RemoveItemRequest>();
+		return std::make_shared<RemoveItemRequest>();
 	case Request::Command::GET_ITEM_TYPE:
-		return std::make_unique<GetItemTypesRequest>();
+		return std::make_shared<GetItemTypesRequest>();
 	case Request::Command::PRINT_ITEM:
-		return std::make_unique<AddItemRequest>();
+		return std::make_shared<PrintItemRequest>();
 	case Request::Command::ADD_STOCK:
-		return std::make_unique<AddStockRequest>();
+		return std::make_shared<AddStockRequest>();
 	case Request::Command::REDUCE_STOCK:
-		return std::make_unique<ReduceStockRequest>();
+		return std::make_shared<ReduceStockRequest>();
 	case Request::Command::GET_MENU:
-		return std::make_unique<GetMenusRequest>();
+		return std::make_shared<GetMenusRequest>();
 	default:
 		assert(false);
 		return nullptr;

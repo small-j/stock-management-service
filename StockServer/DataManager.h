@@ -13,5 +13,5 @@ class DataManager {
 public:
 	void sendToClient(SOCKET& socket, BaseResponse& res);
 	std::shared_ptr<BaseRequest> recieveFromClient(SOCKET& socket);
-	std::unique_ptr<BaseRequest> createRequestFromCommand(short cmd);
+	std::shared_ptr<BaseRequest> createRequestFromCommand(short cmd);
 };
