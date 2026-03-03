@@ -1,14 +1,15 @@
 #pragma once
 #include "BaseResponse.h"
+#include "RequestCommand.h"
 #include <vector>
 
 class GetItemTypesResponse : public BaseResponse {
 public:
 	GetItemTypesResponse()
-		:BaseResponse(false) {
+		:BaseResponse(Request::Command::GET_ITEM_TYPE, false) {
 	}
 	GetItemTypesResponse(bool status, std::string& message, std::string& itemTypes)
-		:BaseResponse(status, message) {
+		:BaseResponse(Request::Command::GET_ITEM_TYPE, status, message) {
 
 		char delimiter = ',';
 		size_t start = 0;

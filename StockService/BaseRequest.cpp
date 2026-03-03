@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "BaseRequest.h"
 
 int BaseRequest::serialize(char* buffer) const {

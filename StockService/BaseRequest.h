@@ -1,6 +1,6 @@
 #pragma once
-#include "BaseResponse.h"
 #include "RequestCommand.h"
+#include <iostream>
 
 #define REQ_COMMAND_SIZE 2
 

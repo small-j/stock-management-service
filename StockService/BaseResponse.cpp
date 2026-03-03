@@ -1,7 +1,13 @@
+#include "pch.h"
 #include "BaseResponse.h"
 
 int BaseResponse::serialize(char* buffer) {
 	int offset = 0;
+	short command = getCommand();
+
+	// command 추가
+	memcpy(buffer + offset, &command, RES_COMMAND_SIZE);
+	offset += RES_COMMAND_SIZE;
 
 	memcpy(buffer + offset, &_status, RES_STATUS_SIZE);
 	offset += RES_STATUS_SIZE;
@@ -18,6 +24,9 @@ int BaseResponse::serialize(char* buffer) {
 
 int BaseResponse::deserialize(const char* buffer) {
 	int offset = 0;
+
+	memcpy(&_command, buffer + offset, RES_COMMAND_SIZE);
+	offset += RES_COMMAND_SIZE;
 
 	memcpy(&_status, buffer + offset, RES_STATUS_SIZE);
 	offset += RES_STATUS_SIZE;

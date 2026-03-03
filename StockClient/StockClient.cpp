@@ -20,6 +20,7 @@
 #include "ReduceStockResponse.h"
 
 #pragma comment(lib, "ws2_32.lib")
+#pragma comment(lib, "StockService.lib")
 
 #define PORT 4578
 

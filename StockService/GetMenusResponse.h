@@ -1,14 +1,15 @@
 #pragma once
 #include "BaseResponse.h"
+#include "RequestCommand.h"
 #include <vector>
 
 class GetMenusResponse : public BaseResponse {
 public:
 	GetMenusResponse()
-		:BaseResponse(false) {
+		:BaseResponse(Request::Command::GET_MENU, false) {
 	}
 	GetMenusResponse(bool status, std::string& message, std::string& menus)
-		:BaseResponse(status, message) {
+		:BaseResponse(Request::Command::GET_MENU, status, message) {
 		
 		char delimiter = ',';
 		size_t start = 0;

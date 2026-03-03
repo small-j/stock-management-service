@@ -1,6 +1,7 @@
-#include "AddStockRequest.h"
+#include "pch.h"
+#include "ReduceStockRequest.h"
 
-int AddStockRequest::serialize(char* buffer) const {
+int ReduceStockRequest::serialize(char* buffer) const {
 	int offset = __super::serialize(buffer);
 
 	memcpy(buffer + offset, &_itemId, sizeof(_itemId));
@@ -12,7 +13,7 @@ int AddStockRequest::serialize(char* buffer) const {
 	return offset;
 }
 
-int AddStockRequest::deserialize(const char* buffer) {
+int ReduceStockRequest::deserialize(const char* buffer) {
 	int offset = __super::deserialize(buffer);
 
 	memcpy(&_itemId, buffer + offset, sizeof(_itemId));
