@@ -1,5 +1,6 @@
 #pragma once
 #include <winsock.h>
+#include <memory>
 
 #define PACKET_SIZE 1024 // byte
 // 1024로 고정되어 있어서 이 이상의 데이터를 보낼 수가 없다.
@@ -11,5 +12,7 @@ class BaseResponse;
 
 class DataManager {
 public:
-	void sendToServer(SOCKET& serverSocket, BaseRequest& req, BaseResponse& res);
+	void sendToServer(SOCKET& serverSocket, BaseRequest& req);
+	std::shared_ptr<BaseResponse> recieveFromServer(SOCKET& socket);
+	std::shared_ptr<BaseResponse> createResponseFromCommand(short cmd);
 };
