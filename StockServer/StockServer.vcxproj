@@ -111,10 +111,12 @@
       <LanguageStandard>stdcpp20</LanguageStandard>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <AdditionalIncludeDirectories>C:\Users\jiyun\Desktop\stockServiceProj\StockService;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>C:\Users\jiyun\Desktop\stockServiceProj\StockService\x64\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -135,19 +137,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="AddItemRequest.h" />
-    <ClInclude Include="AddItemResponse.h" />
-    <ClInclude Include="AddStockRequest.h" />
-    <ClInclude Include="AddStockResponse.h" />
-    <ClInclude Include="BaseRequest.h" />
-    <ClInclude Include="BaseResponse.h" />
-    <ClCompile Include="AddItemRequest.cpp" />
-    <ClCompile Include="AddStockRequest.cpp" />
-    <ClCompile Include="BaseRequest.cpp" />
-    <ClCompile Include="BaseResponse.cpp" />
     <ClCompile Include="DataManager.cpp" />
-    <ClCompile Include="GetItemTypesResponse.cpp" />
-    <ClCompile Include="GetMenusResponse.cpp" />
     <ClCompile Include="Item.cpp" />
     <ClCompile Include="ItemManager.cpp" />
     <ClCompile Include="pch.cpp">
@@ -156,36 +146,19 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="PrintItemResponse.cpp" />
-    <ClCompile Include="ReduceStockRequest.cpp" />
-    <ClCompile Include="RemoveItemRequest.cpp" />
     <ClCompile Include="Stock.cpp" />
     <ClCompile Include="StockManager.cpp" />
     <ClCompile Include="StockServer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DataManager.h" />
-    <ClInclude Include="GetItemTypesRequest.h" />
-    <ClInclude Include="GetItemTypesResponse.h" />
-    <ClInclude Include="GetMenusRequest.h" />
-    <ClInclude Include="GetMenusResponse.h" />
     <ClInclude Include="Item.h" />
     <ClInclude Include="ItemManager.h" />
     <ClInclude Include="ItemType.h" />
     <ClInclude Include="ItemTypeHelper.h" />
     <ClInclude Include="pch.h" />
-    <ClInclude Include="PrintItemRequest.h" />
-    <ClInclude Include="PrintItemResponse.h" />
-    <ClInclude Include="ReduceStockRequest.h" />
-    <ClInclude Include="ReduceStockResponse.h" />
-    <ClInclude Include="RemoveItemRequest.h" />
-    <ClInclude Include="RemoveItemResponse.h" />
-    <ClInclude Include="RequestCommand.h" />
     <ClInclude Include="Stock.h" />
     <ClInclude Include="StockManager.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="StockServer.slnx" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
