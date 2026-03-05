@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include <winsock.h>
 
 #define PACKET_SIZE 1024 // byte
