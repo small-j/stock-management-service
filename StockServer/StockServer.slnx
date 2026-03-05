@@ -3,5 +3,6 @@
     <Platform Name="x64" />
     <Platform Name="x86" />
   </Configurations>
+  <Project Path="../StockService/StockService.vcxproj" Id="6793659a-7b65-463d-9d3c-2fa2a3e09a41" />
   <Project Path="StockServer.vcxproj" Id="6e8af063-f432-4ec8-bf0b-0e4c417cf2b1" />
 </Solution>
