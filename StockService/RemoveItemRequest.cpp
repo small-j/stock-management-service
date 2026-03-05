@@ -1,4 +1,4 @@
-#include "pch.h"
+﻿#include "pch.h"
 #include "RemoveItemRequest.h"
 
 int RemoveItemRequest::serialize(char* buffer) const {

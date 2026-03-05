@@ -1,4 +1,4 @@
-#include "pch.h"
+﻿#include "pch.h"
 #include "GetItemTypesResponse.h"
 
 std::string GetItemTypesResponse::toString() {

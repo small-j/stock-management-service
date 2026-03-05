@@ -1,4 +1,4 @@
-#include "pch.h"
+﻿#include "pch.h"
 #include "AddStockRequest.h"
 
 int AddStockRequest::serialize(char* buffer) const {

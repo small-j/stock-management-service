@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 struct Request {
 	enum Command : short

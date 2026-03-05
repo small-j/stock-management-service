@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "BaseRequest.h"
 
 class GetMenusRequest : public BaseRequest {

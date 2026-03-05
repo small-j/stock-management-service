@@ -1,4 +1,4 @@
-#include "pch.h"
+﻿#include "pch.h"
 #include "ReduceStockRequest.h"
 
 int ReduceStockRequest::serialize(char* buffer) const {

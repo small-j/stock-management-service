@@ -1,4 +1,4 @@
-#include "pch.h"
+﻿#include "pch.h"
 #include "PrintItemResponse.h"
 
 int PrintItemResponse::serialize(char* buffer) {

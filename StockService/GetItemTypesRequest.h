@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "BaseRequest.h"
 
 class GetItemTypesRequest : public BaseRequest {
