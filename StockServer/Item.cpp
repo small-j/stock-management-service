@@ -3,14 +3,8 @@
 #include "Item.h"
 #include "ItemTypeHelper.h"
 
-//Item::Item()
-//	: _id(0)
-//	, _name()
-//	, type(ItemType::UNKNOWN)
-//{
-//}
-
-Item::Item(const unsigned int id, const string& name, const ItemType& type) // 화면상에서는 마이너스를 받아서 처리하도록.
+// 화면상에서는 마이너스를 받아서 처리하도록.
+Item::Item(const unsigned int id, const string& name, const ItemType& type) 
 	: _id(id), _name(name), _type(type) {}
 
 const unsigned int Item::getId() const {

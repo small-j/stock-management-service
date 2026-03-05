@@ -20,7 +20,8 @@ bool ItemManager::addItem(const string& name, const ItemType& type) {
 	unsigned int id = publishItemId();
 	if (id == Item::INVALID_ID) return false;
 
-	shared_ptr<Item> itemSp = make_shared<Item>(id, name, type); // 하다가 할당이 안될수도 있음.
+	// TODO: 할당이 안되는 경우 처리 필요.
+	shared_ptr<Item> itemSp = make_shared<Item>(id, name, type);
 
 	if (itemSp.get() == nullptr || !itemSp->isValid()) return false;
 
@@ -39,8 +40,6 @@ bool ItemManager::removeItem(const unsigned int itemId) {
 	return true;
 }
 
-// shared_ptr로 반환하는 것과 shared_ptr의 참조형으로 반환하는 것과 다름
-// -> item을 수정할일이 있으면 참조형으로 반환해야함.
 const shared_ptr<Item> ItemManager::findItemById(const unsigned int itemId) const {
 	//map search 
 
@@ -48,7 +47,6 @@ const shared_ptr<Item> ItemManager::findItemById(const unsigned int itemId) cons
 	if (itemItr == _items.end()) return nullptr;
 	return itemItr->second;
 }
-// nullptr이 아니라 static으로 인벨리드한 아이템 하나 만들어서 반환해주는 경우도 있음. shared ptr을 못쓰는 경우.
 
 std::string ItemManager::itemListToString() const
 {

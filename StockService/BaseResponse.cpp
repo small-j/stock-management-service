@@ -5,7 +5,7 @@ int BaseResponse::serialize(char* buffer) {
 	int offset = 0;
 	short command = getCommand();
 
-	// command 추가
+	// command 추가.
 	memcpy(buffer + offset, &command, RES_COMMAND_SIZE);
 	offset += RES_COMMAND_SIZE;
 
@@ -31,7 +31,7 @@ int BaseResponse::deserialize(const char* buffer) {
 	memcpy(&_status, buffer + offset, RES_STATUS_SIZE);
 	offset += RES_STATUS_SIZE;
 
-	int messageSize = 0; // TODO: 멤버변수로 만들어야 할지 의견 여쭤보기
+	int messageSize = 0; // TODO: 멤버변수로 만들어야 할지 의견 여쭤보기.
 	memcpy(&messageSize, buffer + offset, sizeof(messageSize));
 	offset += sizeof(messageSize);
 

@@ -10,7 +10,6 @@ struct Request {
 		GET_ITEM_TYPE,
 		ADD_STOCK = 2001,
 		REDUCE_STOCK,
-		GET_MENU = 3001,
-		//COUNT
+		GET_MENU = 3001
 	};
 };

@@ -18,11 +18,12 @@
 
 // 나중에는 send, receive 나누고 queue에 각각 넣어줄 것이다.
 void DataManager::sendToClient(SOCKET& socket, BaseResponse& res) {
+	// TODO: 버퍼 용량 넘는 경우 처리 필요.
 	//int maxDataSize = PACKET_SIZE - RES_STATUS_SIZE - RES_MESSAGE_SIZE;
 
 	//if (data != std::nullopt 
 	//	&& data.value().size() > maxDataSize) {
-	//	throw std::out_of_range("데이터 크기가 버퍼 용량을 초과했습니다."); // 질문
+	//	throw std::out_of_range("데이터 크기가 버퍼 용량을 초과했습니다.");
 	//}
 	char sendBuffer[PACKET_SIZE];
 	memset(sendBuffer, '\0', PACKET_SIZE);

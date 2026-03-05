@@ -15,10 +15,10 @@ public:
 private:
 	// <item_id, stock_ptr>
 	map<unsigned int, shared_ptr<Stock> > _stocks; // shared_ptr을 typedef 로 빼면 꺽쇄 붙여도 됨.
-	//vector<StockHistory> _stockHistory; // 2차 구현 예정
+	//vector<StockHistory> _stockHistory; // 2차 구현 예정.
 
 public:
-	// 새로 추가하는 Stock은 동적할당. !!new는 동적할당인가?
+	// 새로 추가하는 Stock은 동적할당. !!new는 동적할당인가?.
 	bool addStock(const unsigned int itemId, const unsigned int count);
 	// 삭제되는 Stock은 동적할당 해제.
 	bool reduceStock(const unsigned int itemId, const unsigned int count);

@@ -53,7 +53,7 @@ int main()
 	connect(hSocket, (SOCKADDR*)&serverAddr, sizeof(serverAddr));
 
 	DataManager dataManager;
-	// TODO: menu 한번만 가져와서 계속 출력해주도록 변경?
+	// TODO: menu 한번만 가져와서 계속 출력해주도록 변경?.
 	
 	while (1)
 	{
@@ -128,7 +128,7 @@ void addItem(SOCKET& serverSocket, DataManager dataManager)
 		return;
 	}
 
-	// 필요한 데이터 입력 받기
+	// 필요한 데이터 입력 받기.
 	std::string name;
 	int itemType = 0;
 	std::cout << "아이템의 이름을 입력해주세요.\t";

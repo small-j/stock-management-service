@@ -62,15 +62,15 @@ int main()
 
     SOCKADDR_IN listenSocketAddr = { 0 };
     listenSocketAddr.sin_family = AF_INET;
-    listenSocketAddr.sin_port = htons(PORT); // 요청을 수신할 소켓 프로세스가 사용할 포트번호
+    listenSocketAddr.sin_port = htons(PORT); // 요청을 수신할 소켓 프로세스가 사용할 포트번호.
     listenSocketAddr.sin_addr.s_addr = htonl(INADDR_ANY); // 어떤 주소든 받는다.
     
-    // 소켓을 특정 주소 및 포트와 연결
+    // 소켓을 특정 주소 및 포트와 연결.
     bind(listenSocket, (SOCKADDR*)&listenSocketAddr, sizeof(listenSocketAddr));
-    // 연결 수신 대기 함수:listen
-    listen(listenSocket, SOMAXCONN); // 소켓이 동시에 처리할 수 있는 최대 연결 수
+    // 연결 수신 대기 함수:listen.
+    listen(listenSocket, SOMAXCONN); // 소켓이 동시에 처리할 수 있는 최대 연결 수.
 
-    // 연결 클라이언트 정보 수신할 구조체
+    // 연결 클라이언트 정보 수신할 구조체.
     SOCKADDR_IN acceptSocketAddr = {};
     int acceptSocketAddrSize = sizeof(acceptSocketAddr);
 

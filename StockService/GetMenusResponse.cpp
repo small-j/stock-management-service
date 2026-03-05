@@ -15,16 +15,16 @@ int GetMenusResponse::serialize(char* buffer) {
 	char delimiter = ',';
 	int delimiterSize = sizeof(delimiter);
 
-	int strLength = (_menus.size() - 1) * delimiterSize;
+	int strLength = static_cast<int>((_menus.size() - 1) * delimiterSize);
 	for (std::string& menu : _menus) {
 		strLength += static_cast<int>(menu.length());
 	}
 
-	// 문자열 길이 기록
+	// 문자열 길이 기록.
 	memcpy(buffer + offset, &strLength, sizeof(int));
 	offset += sizeof(int);
 
-	// 문자열 기록
+	// 문자열 기록.
 	for (size_t i = 0; i < _menus.size(); ++i) {
 		std::string temp = i == _menus.size() - 1 ? _menus[i] : _menus[i] + delimiter;
 		memcpy(buffer + offset, temp.c_str(), temp.length());

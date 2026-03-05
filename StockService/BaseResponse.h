@@ -4,7 +4,6 @@
 
 #define RES_COMMAND_SIZE 2
 #define RES_STATUS_SIZE 2 // 0: fail 1: success
-// TODO: 한글 주석 warning 조사
 
 class BaseResponse {
 public:

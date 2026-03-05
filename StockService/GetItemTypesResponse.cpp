@@ -2,7 +2,7 @@
 #include "GetItemTypesResponse.h"
 
 std::string GetItemTypesResponse::toString() {
-	std::string result = "사용 가능한 아이템 타입:\n"; // TODO : 한국어 인코딩 고치기
+	std::string result = "사용 가능한 아이템 타입:\n"; // TODO : 한국어 인코딩 고치기.
 	for (size_t i = 0; i < _itemTypes.size(); ++i) {
 		result += _itemTypes[i] + "\n";
 	}
@@ -20,11 +20,11 @@ int GetItemTypesResponse::serialize(char* buffer) {
 		strLength += static_cast<int>(menu.length());
 	}
 
-	// 문자열 길이 기록
+	// 문자열 길이 기록.
 	memcpy(buffer + offset, &strLength, sizeof(int));
 	offset += sizeof(int);
 
-	// 문자열 기록
+	// 문자열 기록.
 	for (size_t i = 0; i < _itemTypes.size(); ++i) {
 		std::string temp = i == _itemTypes.size() - 1 ? _itemTypes[i] : _itemTypes[i] + delimiter;
 		memcpy(buffer + offset, temp.c_str(), temp.length());
