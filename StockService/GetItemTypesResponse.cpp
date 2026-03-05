@@ -15,7 +15,7 @@ int GetItemTypesResponse::serialize(char* buffer) {
 	char delimiter = ',';
 	int delimiterSize = sizeof(delimiter);
 
-	int strLength = (_itemTypes.size() - 1) * delimiterSize;
+	int strLength = static_cast<int>((_itemTypes.size() - 1) * delimiterSize);
 	for (std::string& menu : _itemTypes) {
 		strLength += static_cast<int>(menu.length());
 	}
