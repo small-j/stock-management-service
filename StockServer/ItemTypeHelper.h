@@ -7,7 +7,7 @@ enum ItemType;
 class ItemTypeHelper {
 private:
     // itemtype과 수동으로 동기화해야함.
-    inline static const string enumToString[ItemType::COUNT] = {
+    inline static std::array<std::string, static_cast<size_t>(ItemType::COUNT)> enumToString = {
         "FOOD",
         "CLOTHES"
     };
