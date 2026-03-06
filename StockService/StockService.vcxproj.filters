@@ -13,6 +13,9 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="common">
+      <UniqueIdentifier>{d210711a-7c38-4ec2-9304-4427049f936c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -28,12 +31,6 @@
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="AddStockResponse.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
-    <ClInclude Include="BaseRequest.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
-    <ClInclude Include="BaseResponse.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="GetItemTypesRequest.h">
@@ -67,13 +64,16 @@
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="RequestCommand.h">
-      <Filter>헤더 파일</Filter>
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="BaseRequest.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="BaseResponse.h">
+      <Filter>common</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="StockService.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
     <ClCompile Include="pch.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
@@ -81,12 +81,6 @@
       <Filter>소스 파일</Filter>
     </ClCompile>
     <ClCompile Include="AddStockRequest.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="BaseRequest.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="BaseResponse.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
     <ClCompile Include="GetItemTypesResponse.cpp">
@@ -103,6 +97,12 @@
     </ClCompile>
     <ClCompile Include="RemoveItemRequest.cpp">
       <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="BaseRequest.cpp">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="BaseResponse.cpp">
+      <Filter>common</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

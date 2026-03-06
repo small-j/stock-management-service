@@ -16,16 +16,19 @@
     <Filter Include="common">
       <UniqueIdentifier>{3e089923-9010-4577-a48b-e4008903377d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="network">
+      <UniqueIdentifier>{29795e43-f85c-49b1-8ddb-9f3af3e0cffb}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="StockClient.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="DataManager.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
     <ClCompile Include="DataManager.h">
-      <Filter>헤더 파일</Filter>
+      <Filter>network</Filter>
+    </ClCompile>
+    <ClCompile Include="DataManager.cpp">
+      <Filter>network</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

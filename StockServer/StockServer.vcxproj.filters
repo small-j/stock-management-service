@@ -13,6 +13,21 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="network">
+      <UniqueIdentifier>{0f57eeb8-a10b-4e84-b118-4cf1ed97c546}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="common">
+      <UniqueIdentifier>{9109e08f-6eed-4905-a1ea-27388795c190}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="model">
+      <UniqueIdentifier>{9e1ad034-ecb0-4e8a-9058-df36f821199a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="manager">
+      <UniqueIdentifier>{9c8fdf0e-abb5-4cb8-81bb-c851a2989273}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="container">
+      <UniqueIdentifier>{5cd2f6bd-9764-453b-be81-de148acd5392}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="StockServer.cpp">
@@ -21,46 +36,46 @@
     <ClCompile Include="pch.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="Item.cpp">
-      <Filter>소스 파일</Filter>
+    <ClCompile Include="DataManager.cpp">
+      <Filter>network</Filter>
     </ClCompile>
-    <ClCompile Include="ItemManager.cpp">
-      <Filter>소스 파일</Filter>
+    <ClCompile Include="Item.cpp">
+      <Filter>model</Filter>
     </ClCompile>
     <ClCompile Include="Stock.cpp">
-      <Filter>소스 파일</Filter>
+      <Filter>model</Filter>
+    </ClCompile>
+    <ClCompile Include="ItemManager.cpp">
+      <Filter>manager</Filter>
     </ClCompile>
     <ClCompile Include="StockManager.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="DataManager.cpp">
-      <Filter>소스 파일</Filter>
+      <Filter>manager</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
+    <ClInclude Include="DataManager.h">
+      <Filter>network</Filter>
+    </ClInclude>
     <ClInclude Include="Item.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
-    <ClInclude Include="ItemManager.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
-    <ClInclude Include="ItemType.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
-    <ClInclude Include="ItemTypeHelper.h">
-      <Filter>헤더 파일</Filter>
+      <Filter>model</Filter>
     </ClInclude>
     <ClInclude Include="Stock.h">
-      <Filter>헤더 파일</Filter>
+      <Filter>model</Filter>
+    </ClInclude>
+    <ClInclude Include="ItemType.h">
+      <Filter>model</Filter>
+    </ClInclude>
+    <ClInclude Include="ItemTypeHelper.h">
+      <Filter>manager</Filter>
+    </ClInclude>
+    <ClInclude Include="ItemManager.h">
+      <Filter>manager</Filter>
     </ClInclude>
     <ClInclude Include="StockManager.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
-    <ClInclude Include="DataManager.h">
-      <Filter>헤더 파일</Filter>
+      <Filter>manager</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
