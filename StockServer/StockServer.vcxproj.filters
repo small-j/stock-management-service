@@ -51,6 +51,9 @@
     <ClCompile Include="StockManager.cpp">
       <Filter>manager</Filter>
     </ClCompile>
+    <ClCompile Include="MiddleManager.cpp">
+      <Filter>manager</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -75,6 +78,9 @@
       <Filter>manager</Filter>
     </ClInclude>
     <ClInclude Include="StockManager.h">
+      <Filter>manager</Filter>
+    </ClInclude>
+    <ClInclude Include="MiddleManager.h">
       <Filter>manager</Filter>
     </ClInclude>
   </ItemGroup>

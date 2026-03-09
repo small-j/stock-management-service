@@ -10,12 +10,15 @@
 #include <WS2tcpip.h>
 #pragma comment(lib, "ws2_32.lib")
 
+#include <thread>
+
 #include "ItemTypeHelper.h"
 #include "ItemManager.h"
 #include "StockManager.h"
 #include "Item.h"
 #include "Stock.h"
 #include "DataManager.h"
+#include "MiddleManager.h"
 #include "RequestCommand.h"
 #include "BaseRequest.h"
 #include "BaseResponse.h"
@@ -98,6 +101,8 @@ void run(SOCKET& clientSocket) {
 	DataManager dataManager;
 	ItemManager itemManager;
 	StockManager stockManager;
+	MiddleManager middleManager;
+	std::thread middleManagerT(&MiddleManager::loop, &middleManager);
 
 	while (true)
 	{
@@ -107,6 +112,8 @@ void run(SOCKET& clientSocket) {
 			break;
 		}
 
+		// TODO 추가 실패하면 3번 재시도 및 3번 실패하면 유저에게 실패 메시지 반환하기.
+		middleManager.addRequest(req); 
 		bool exeResult = execute(clientSocket, dataManager, itemManager, stockManager, req);
 		
 		if (exeResult == false)
@@ -120,6 +127,8 @@ void run(SOCKET& clientSocket) {
 			break;
 		}
 	}
+
+	middleManagerT.join();
 }
 
 bool execute(
