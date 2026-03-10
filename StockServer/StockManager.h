@@ -19,9 +19,9 @@ private:
 
 public:
 	// 새로 추가하는 Stock은 동적할당. !!new는 동적할당인가?.
-	bool addStock(const unsigned int itemId, const unsigned int count);
+	StockServer::StatusCode addStock(const unsigned int itemId, const unsigned int count);
 	// 삭제되는 Stock은 동적할당 해제.
-	bool reduceStock(const unsigned int itemId, const unsigned int count);
+	StockServer::StatusCode reduceStock(const unsigned int itemId, const unsigned int count);
 	const shared_ptr<Stock> findStockByItemId(const unsigned int itemId) const;
 
 	//bool importStock(csv); // 2차 구현 csv 파일 받을 수 있는 라이브러리? 찾아보기.

@@ -16,8 +16,8 @@ private:
 public:
 	const unsigned int getItemId() const;
 	const unsigned int getCount() const;
-	bool increaseCount(const unsigned int count);
-	bool decreaseCount(const unsigned int count);
+	StockServer::StatusCode increaseCount(const unsigned int count);
+	StockServer::StatusCode decreaseCount(const unsigned int count);
 
 	bool isValid() const;
 };

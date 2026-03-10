@@ -3,17 +3,17 @@
 #include "Stock.h"
 
 // 새로 추가하는 Stock은 동적할당.
-bool StockManager::addStock(const unsigned int itemId, const unsigned int count) {
-	if (count == 0) return false;
+StockServer::StatusCode StockManager::addStock(const unsigned int itemId, const unsigned int count) {
+	if (count == 0) return StockServer::StatusCode::CANCELLED;
 	
 	auto stockItr = _stocks.find(itemId);
 	if (stockItr == _stocks.end()) {
 		// add new stock
 		if (shared_ptr<Stock> stockSp = make_shared<Stock>(itemId, count)) {
 			_stocks[itemId] = stockSp;
-			return true;
+			return StockServer::StatusCode::OK;
 		}
-		return false;
+		return StockServer::StatusCode::CANCELLED;
 	}
 
 	shared_ptr<Stock> stockSp = stockItr->second;
@@ -22,24 +22,24 @@ bool StockManager::addStock(const unsigned int itemId, const unsigned int count)
 }
 
 // 삭제되는 Stock은 동적할당 해제.
-bool StockManager::reduceStock(const unsigned int itemId, const unsigned int count) {
-	if (count == 0) return false;
+StockServer::StatusCode StockManager::reduceStock(const unsigned int itemId, const unsigned int count) {
+	if (count == 0) return StockServer::StatusCode::CANCELLED;
 	
 	auto stockItr = _stocks.find(itemId);
-	if (stockItr == _stocks.end()) return false;
+	if (stockItr == _stocks.end()) return StockServer::StatusCode::CANCELLED;
 
 	if (shared_ptr<Stock> stock = stockItr->second) {
-		if (stock->decreaseCount(count) != true) return false;
+		if (stock->decreaseCount(count) != StockServer::StatusCode::OK) return StockServer::StatusCode::CANCELLED;
 
 		if (stock->getCount() == 0) {
 			_stocks.erase(stockItr);
 			stock = nullptr;
 		}
 
-		return true;
+		return StockServer::StatusCode::OK;
 	}
 
-	return false;
+	return StockServer::StatusCode::CANCELLED;
 }
 
 const shared_ptr<Stock> StockManager::findStockByItemId(const unsigned int itemId) const {

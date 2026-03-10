@@ -12,6 +12,7 @@
 #include <string>
 
 #include "ItemType.h"
+#include "Status.h"
 
 
 #endif //PCH_H

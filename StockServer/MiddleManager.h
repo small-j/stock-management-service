@@ -27,13 +27,13 @@ public:
 	}
 
 	void initialize();
-	bool loop(); // queue watching + pop job.
-	bool execute(std::shared_ptr<BaseRequest> req);
-	bool addRequest(std::shared_ptr<BaseRequest> req);
-	bool popRequest();
+	StockServer::StatusCode loop(); // queue watching + pop job.
+	StockServer::StatusCode execute(std::shared_ptr<BaseRequest> req);
+	StockServer::StatusCode addRequest(std::shared_ptr<BaseRequest> req);
+	StockServer::StatusCode popRequest();
 
 	// TODO: 
-	//bool callApi();
+	//StockServer::StatusCode callApi();
 	//std::shared_ptr<BaseResponse> makeResponse();
 	//void pushJobToNextStepQueue();
 };

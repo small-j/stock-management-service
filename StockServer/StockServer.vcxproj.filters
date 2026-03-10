@@ -83,5 +83,8 @@
     <ClInclude Include="MiddleManager.h">
       <Filter>manager</Filter>
     </ClInclude>
+    <ClInclude Include="Status.h">
+      <Filter>common</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

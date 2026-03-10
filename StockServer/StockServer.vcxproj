@@ -158,6 +158,7 @@
     <ClInclude Include="ItemTypeHelper.h" />
     <ClInclude Include="MiddleManager.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="Status.h" />
     <ClInclude Include="Stock.h" />
     <ClInclude Include="StockManager.h" />
   </ItemGroup>

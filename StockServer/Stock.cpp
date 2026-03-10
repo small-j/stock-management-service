@@ -13,19 +13,19 @@ const unsigned int Stock::getCount() const {
 	return _count;
 }
 
-bool Stock::increaseCount(const unsigned int count) {
+StockServer::StatusCode Stock::increaseCount(const unsigned int count) {
 	unsigned int maxCount = std::numeric_limits<unsigned int>::max();
-	if (maxCount - count < _count) return false;
+	if (maxCount - count < _count) return StockServer::StatusCode::CANCELLED;
 	
 	_count += count;
-	return true;
+	return StockServer::StatusCode::OK;
 }
 
-bool Stock::decreaseCount(const unsigned int count) {
-	if (_count < count) return false;
+StockServer::StatusCode Stock::decreaseCount(const unsigned int count) {
+	if (_count < count) return StockServer::StatusCode::CANCELLED;
 
 	_count -= count;
-	return true;
+	return StockServer::StatusCode::OK;
 }
 
 

@@ -13,7 +13,7 @@ void MiddleManager::initialize() {
 	loop();
 }
 
-bool MiddleManager::loop() {
+StockServer::StatusCode MiddleManager::loop() {
 	while (isQuitRequested() == false) {
 		if (_jobQueue.empty()) {
 			std::this_thread::sleep_for(std::chrono::milliseconds(500)); // cpu 점유 방지.
@@ -21,23 +21,22 @@ bool MiddleManager::loop() {
 		else {
 			execute(_jobQueue.front());
 
+			// TODO: popRequest 실패했을 때 어떻게 할지?
 			popRequest();
 		}
 	}
 
-	return true;
+	return StockServer::StatusCode::OK;
 }
 
-// TODO: 어떤 유형의 문제인지를 구분해주자 
-// -> enum 하나 선언해서 에러 타입을 구분
-bool MiddleManager::execute(std::shared_ptr<BaseRequest> req) {
-	if (!req) return false;
+StockServer::StatusCode MiddleManager::execute(std::shared_ptr<BaseRequest> req) {
+	if (!req) return StockServer::StatusCode::CANCELLED;
 	std::cout << req->getCommand() << "추출 성공!" << std::endl;
-	return true;
+	return StockServer::StatusCode::OK;
 }
 
-bool MiddleManager::addRequest(std::shared_ptr<BaseRequest> req) {
-	if (!req) return false;
+StockServer::StatusCode MiddleManager::addRequest(std::shared_ptr<BaseRequest> req) {
+	if (!req) return StockServer::StatusCode::CANCELLED;
 
 	std::lock_guard<std::mutex> lock(_jobQueueMutex);
 	_jobQueue.push(req);
@@ -46,13 +45,13 @@ bool MiddleManager::addRequest(std::shared_ptr<BaseRequest> req) {
 	// 큐에 넣는 걸 실패할 수 있다. 
 	// -> TODO: push작업이 실패하는 경우 어떤 결과가 반환되는지 알아봐야겠다.
 
-	return true;
+	return StockServer::StatusCode::OK;
 }
 
-bool MiddleManager::popRequest() {
+StockServer::StatusCode MiddleManager::popRequest() {
 	std::lock_guard<std::mutex> lock(_jobQueueMutex);
 
 	_jobQueue.pop();
 
-	return true;
+	return StockServer::StatusCode::OK;
 }

@@ -24,10 +24,10 @@ public:
         return result;
     }
 
-    static bool toString(ItemType type, std::string* result) {
-        if (type <= ItemType::UNKNOWN || ItemType::COUNT <= type) return false;
+    static StockServer::StatusCode toString(ItemType type, std::string* result) {
+        if (type <= ItemType::UNKNOWN || ItemType::COUNT <= type) return StockServer::StatusCode::CANCELLED;
         *result = enumToString[type];
-        return result->empty() != true;
+        return result->empty() != true ? StockServer::StatusCode::CANCELLED : StockServer::StatusCode::OK;
     }
 
     static bool isValid(ItemType type) {

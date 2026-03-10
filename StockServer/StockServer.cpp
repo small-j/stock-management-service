@@ -223,7 +223,7 @@ void addItem(
 	if (itemManager.addItem(
 		paredReq.get() ->getName(),
 			static_cast<ItemType>(paredReq.get()->getItemType() - 1)
-			)
+			) == StockServer::StatusCode::OK
 		) {
 		std::string msg = "아이템이 추가되었습니다.\n";
 		res = AddItemResponse(true, msg);
@@ -256,7 +256,9 @@ void removeItem(
 		return;
 	}
 
-	if (itemManager.removeItem(paredReq.get()->getItemId()))
+	if (itemManager.removeItem(
+		paredReq.get()->getItemId()
+	) == StockServer::StatusCode::OK)
 	{
 		msg = std::to_string(paredReq.get()->getItemId()) + " 아이템이 삭제되었습니다.\n";
 		res = RemoveItemResponse(true, msg);
@@ -303,7 +305,10 @@ void addStock(
 		return;
 	}
 
-	if (stockManager.addStock(paredReq.get()->getItemId(), paredReq.get()->getCount()))
+	if (stockManager.addStock(
+		paredReq.get()->getItemId(), 
+		paredReq.get()->getCount()
+	) == StockServer::StatusCode::OK)
 	{
 		msg = "재고가 늘어났습니다.\n";
 		res = AddStockResponse(true, msg);
@@ -328,7 +333,10 @@ void reduceStock(
 
 	std::string msg;
 
-	if (stockManager.reduceStock(paredReq.get()->getItemId(), paredReq.get()->getCount()))
+	if (stockManager.reduceStock(
+		paredReq.get()->getItemId(), 
+		paredReq.get()->getCount()
+	) == StockServer::StatusCode::OK)
 	{
 		msg = "재고가 삭제되었습니다.\n";
 		res = ReduceStockResponse(true, msg);

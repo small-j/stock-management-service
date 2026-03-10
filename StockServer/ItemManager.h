@@ -21,9 +21,9 @@ private:
 public:
 	void finalize(); // item 전체 동적할당 해제.
 	// item 동적할당. 여기서 아이디 발급 실패시 예외처리.
-	bool addItem(const string& name, const ItemType& type);
+	StockServer::StatusCode addItem(const string& name, const ItemType& type);
 	// 동적할당 해제. stock과 연결된 item은 삭제 불가.
-	bool removeItem(const unsigned int id);
+	StockServer::StatusCode removeItem(const unsigned int id);
 	const shared_ptr<Item> findItemById(const unsigned int itemId) const;
 	string itemListToString() const;
 };
