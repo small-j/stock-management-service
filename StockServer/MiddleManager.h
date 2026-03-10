@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include <memory>
 #include <queue>
+#include <mutex>
 //#include "BaseRequest.h"
 
 class DataManager;
@@ -13,6 +14,7 @@ public:
 
 private:
 	bool _isQuitRequested = false;
+	std::mutex _jobQueueMutex;
 	std::queue<std::shared_ptr<BaseRequest> > _jobQueue;
 	// std::shared_ptr<DataManager> _dataManagerPtr;
 
@@ -28,6 +30,7 @@ public:
 	bool loop(); // queue watching + pop job.
 	bool execute(std::shared_ptr<BaseRequest> req);
 	bool addRequest(std::shared_ptr<BaseRequest> req);
+	bool popRequest();
 
 	// TODO: 
 	//bool callApi();
