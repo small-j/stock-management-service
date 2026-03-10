@@ -9,6 +9,9 @@ class BaseResponse;
 
 class DataManager {
 public:
+	DataManager() = default;
+	virtual ~DataManager() = default;
+
 	void sendToServer(SOCKET& serverSocket, BaseRequest& req);
 	std::shared_ptr<BaseResponse> recieveFromServer(SOCKET& socket);
 	std::shared_ptr<BaseResponse> createResponseFromCommand(short cmd);
