@@ -14,6 +14,7 @@ public:
 		, _name(name)
 		, _itemType(itemType) {
 	}
+	virtual ~AddItemRequest() = default;
 
 private:
 	std::string _name;

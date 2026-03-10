@@ -10,4 +10,5 @@ public:
 	AddItemResponse(bool status, std::string& message)
 		:BaseResponse(Request::Command::ADD_ITEM, status, message) {
 	}
+	virtual ~AddItemResponse() = default;
 };

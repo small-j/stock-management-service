@@ -11,6 +11,7 @@ public:
 		:BaseRequest(Request::Command::REMOVE_ITEM)
 		, _itemId(itemId) {
 	}
+	virtual ~RemoveItemRequest() = default;
 
 private:
 	unsigned int _itemId;

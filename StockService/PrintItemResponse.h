@@ -11,6 +11,7 @@ public:
 		:BaseResponse(Request::Command::PRINT_ITEM, status, message)
 		, _itemList(itemList) {
 	}
+	virtual ~PrintItemResponse() = default;
 
 private:
 	std::string _itemList;

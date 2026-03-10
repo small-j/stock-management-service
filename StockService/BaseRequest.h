@@ -7,7 +7,7 @@
 class BaseRequest {
 public:
 	BaseRequest(const short command) : _command(command) {}
-	//virtual ~BaseRequest() = default;
+	virtual ~BaseRequest() = default;
 
 protected:
 	short _command;

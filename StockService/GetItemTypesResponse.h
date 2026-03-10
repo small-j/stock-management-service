@@ -22,6 +22,7 @@ public:
 		}
 		_itemTypes.push_back(itemTypes.substr(start));
 	}
+	virtual ~GetItemTypesResponse() = default;
 
 private:
 	std::vector<std::string> _itemTypes;

@@ -11,4 +11,5 @@ public:
 	RemoveItemResponse(bool status, std::string& message)
 		:BaseResponse(Request::Command::REMOVE_ITEM, status, message) {
 	}
+	virtual ~RemoveItemResponse() = default;
 };

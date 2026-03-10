@@ -9,8 +9,8 @@ class BaseRequest;
 
 class MiddleManager {
 public:
-	MiddleManager() {}
-	~MiddleManager();
+	MiddleManager() = default;
+	virtual ~MiddleManager();
 
 private:
 	bool _isQuitRequested = false;

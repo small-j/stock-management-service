@@ -6,4 +6,5 @@ public:
 	GetMenusRequest()
 		:BaseRequest(Request::Command::GET_MENU) {
 	}
+	virtual ~GetMenusRequest() = default;
 };

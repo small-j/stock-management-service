@@ -10,4 +10,5 @@ public:
 	AddStockResponse(bool status, std::string& message)
 		:BaseResponse(Request::Command::ADD_STOCK, status, message) {
 	}
+	virtual ~AddStockResponse() = default;
 };

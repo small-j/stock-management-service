@@ -12,6 +12,7 @@ public:
 		, _itemId(itemId)
 		, _count(count) {
 	}
+	virtual ~ReduceStockRequest() = default;
 
 private:
 	unsigned int _itemId;

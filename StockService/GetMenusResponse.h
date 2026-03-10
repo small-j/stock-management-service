@@ -22,6 +22,7 @@ public:
 		}
 		_menus.push_back(menus.substr(start));
 	}
+	virtual ~GetMenusResponse() = default;
 
 private:
 	std::vector<std::string> _menus;

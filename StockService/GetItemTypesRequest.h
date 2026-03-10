@@ -6,4 +6,5 @@ public:
 	GetItemTypesRequest()
 		:BaseRequest(Request::Command::GET_ITEM_TYPE) {
 	}
+	virtual ~GetItemTypesRequest() = default;
 };

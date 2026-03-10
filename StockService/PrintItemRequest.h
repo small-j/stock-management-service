@@ -6,4 +6,5 @@ public:
 	PrintItemRequest()
 		:BaseRequest(Request::Command::PRINT_ITEM) {
 	}
+	virtual ~PrintItemRequest() = default;
 };

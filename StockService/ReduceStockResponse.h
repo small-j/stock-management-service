@@ -10,4 +10,5 @@ public:
 	ReduceStockResponse(bool status, std::string& message)
 		:BaseResponse(Request::Command::REDUCE_STOCK, status, message) {
 	}
+	virtual ~ReduceStockResponse() = default;
 };

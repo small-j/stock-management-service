@@ -12,6 +12,7 @@ public:
 		, _status(status)
 		, _message(message) {
 	}
+	virtual ~BaseResponse() = default;
 
 protected:
 	short _command = Request::Command::UNKNOWN;

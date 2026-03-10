@@ -13,6 +13,7 @@ public:
 		, _itemId(itemId)
 		, _count(count) {
 	}
+	virtual ~AddStockRequest() = default;
 
 private:
 	unsigned int _itemId;
