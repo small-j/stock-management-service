@@ -36,7 +36,7 @@
     <ClCompile Include="pch.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="DataManager.cpp">
+    <ClCompile Include="NetworkManager.cpp">
       <Filter>network</Filter>
     </ClCompile>
     <ClCompile Include="Item.cpp">
