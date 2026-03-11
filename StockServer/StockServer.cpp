@@ -17,7 +17,7 @@
 #include "StockManager.h"
 #include "Item.h"
 #include "Stock.h"
-#include "DataManager.h"
+#include "NetworkManager.h"
 #include "MiddleManager.h"
 #include "RequestCommand.h"
 #include "BaseRequest.h"
@@ -42,15 +42,15 @@ int8_t DESTROY_CONNECTION_METHOD = -1;
 
 void ErrorHandler(const string& errMsg);
 void run(SOCKET& clientSocket);
-bool execute(SOCKET& clientSocket, DataManager& dataManager, ItemManager& itemManager, StockManager& stockManager, std::shared_ptr<BaseRequest>& req);
+bool execute(SOCKET& clientSocket, NetworkManager& networkManager, ItemManager& itemManager, StockManager& stockManager, std::shared_ptr<BaseRequest>& req);
 
-void menus(SOCKET& clientSocket, DataManager& dataManager, ItemManager& itemManager);
-void addItem(SOCKET& clientSocket, DataManager& dataManager, ItemManager& itemManager, std::shared_ptr<BaseRequest>& req);
-void removeItem(SOCKET& clientSocket, DataManager& dataManager, ItemManager& itemManager, StockManager& stockManager, std::shared_ptr<BaseRequest>& req);
-void printItemList(SOCKET& clientSocket, DataManager& dataManager, ItemManager& itemManager);
-void addStock(SOCKET& clientSocket, DataManager& dataManager, ItemManager& itemManager, StockManager& stockManager, std::shared_ptr<BaseRequest>& req);
-void reduceStock(SOCKET& clientSocket, DataManager& dataManager, StockManager& stockManager, std::shared_ptr<BaseRequest>& req);
-void printItemType(SOCKET& clientSocket, DataManager& dataManager);
+void menus(SOCKET& clientSocket, NetworkManager& networkManager, ItemManager& itemManager);
+void addItem(SOCKET& clientSocket, NetworkManager& networkManager, ItemManager& itemManager, std::shared_ptr<BaseRequest>& req);
+void removeItem(SOCKET& clientSocket, NetworkManager& networkManager, ItemManager& itemManager, StockManager& stockManager, std::shared_ptr<BaseRequest>& req);
+void printItemList(SOCKET& clientSocket, NetworkManager& networkManager, ItemManager& itemManager);
+void addStock(SOCKET& clientSocket, NetworkManager& networkManager, ItemManager& itemManager, StockManager& stockManager, std::shared_ptr<BaseRequest>& req);
+void reduceStock(SOCKET& clientSocket, NetworkManager& networkManager, StockManager& stockManager, std::shared_ptr<BaseRequest>& req);
+void printItemType(SOCKET& clientSocket, NetworkManager& networkManager);
 
 
 int main()
@@ -98,7 +98,7 @@ void ErrorHandler(const string& errMsg)
 }
 
 void run(SOCKET& clientSocket) {
-	DataManager dataManager;
+	NetworkManager networkManager;
 	ItemManager itemManager;
 	StockManager stockManager;
 	MiddleManager middleManager;
@@ -106,7 +106,7 @@ void run(SOCKET& clientSocket) {
 
 	while (true)
 	{
-		std::shared_ptr<BaseRequest> req = dataManager.recieveFromClient(clientSocket);
+		std::shared_ptr<BaseRequest> req = networkManager.recieveFromClient(clientSocket);
 		if (req == nullptr) {
 			// log 처리
 			break;
@@ -114,7 +114,7 @@ void run(SOCKET& clientSocket) {
 
 		// TODO 추가 실패하면 3번 재시도 및 3번 실패하면 유저에게 실패 메시지 반환하기.
 		middleManager.addRequest(req); 
-		bool exeResult = execute(clientSocket, dataManager, itemManager, stockManager, req);
+		bool exeResult = execute(clientSocket, networkManager, itemManager, stockManager, req);
 		
 		if (exeResult == false)
 		{
@@ -133,7 +133,7 @@ void run(SOCKET& clientSocket) {
 
 bool execute(
 	SOCKET& clientSocket, 
-	DataManager& dataManager, 
+	NetworkManager& networkManager, 
 	ItemManager& itemManager, 
 	StockManager& stockManager, 
 	std::shared_ptr<BaseRequest>&req)
@@ -142,25 +142,25 @@ bool execute(
 	switch (req.get()->getCommand())
 	{
 	case Request::Command::ADD_ITEM:
-		addItem(clientSocket, dataManager,  itemManager, req);
+		addItem(clientSocket, networkManager,  itemManager, req);
 		return true;
 	case Request::Command::REMOVE_ITEM:
-		removeItem(clientSocket, dataManager, itemManager, stockManager, req);
+		removeItem(clientSocket, networkManager, itemManager, stockManager, req);
 		return true;
 	case Request::Command::PRINT_ITEM:
-		printItemList(clientSocket, dataManager, itemManager);
+		printItemList(clientSocket, networkManager, itemManager);
 		return true;
 	case Request::Command::ADD_STOCK:
-		addStock(clientSocket, dataManager, itemManager, stockManager, req);
+		addStock(clientSocket, networkManager, itemManager, stockManager, req);
 		return true;
 	case Request::Command::REDUCE_STOCK:
-		reduceStock(clientSocket, dataManager, stockManager, req);
+		reduceStock(clientSocket, networkManager, stockManager, req);
 		return true;
 	case Request::Command::GET_ITEM_TYPE:
-		printItemType(clientSocket, dataManager);
+		printItemType(clientSocket, networkManager);
 		return true;
 	case Request::Command::GET_MENU:
-		menus(clientSocket, dataManager, itemManager);
+		menus(clientSocket, networkManager, itemManager);
 		return true;
 	default:
 		return false;
@@ -170,7 +170,7 @@ bool execute(
 // TODO: 서버에서 제공하는 API 목록으로 개선 필요.
 void menus(
 	SOCKET& clientSocket, 
-	DataManager& dataManager, 
+	NetworkManager& networkManager, 
 	ItemManager& itemManager
 ) {
 	std::string menuStr[] = {
@@ -191,10 +191,10 @@ void menus(
 
 	std::string msg = "success";
 	GetMenusResponse res(true, msg, datas);
-	dataManager.sendToClient(clientSocket, res);
+	networkManager.sendToClient(clientSocket, res);
 }
 
-void printItemType(SOCKET& clientSocket, DataManager& dataManager)
+void printItemType(SOCKET& clientSocket, NetworkManager& networkManager)
 {
 	std::vector<std::string> itemTypeStr = ItemTypeHelper::getAllItemInfosToString();
 	std::string msg = "success";
@@ -208,12 +208,12 @@ void printItemType(SOCKET& clientSocket, DataManager& dataManager)
 	}
 
 	GetItemTypesResponse res(true, msg, datas);
-	dataManager.sendToClient(clientSocket, res);
+	networkManager.sendToClient(clientSocket, res);
 }
 
 void addItem(
 	SOCKET& clientSocket, 
-	DataManager& dataManager,
+	NetworkManager& networkManager,
 	ItemManager& itemManager, 
 	std::shared_ptr<BaseRequest>& req
 ) {
@@ -233,12 +233,12 @@ void addItem(
 		res = AddItemResponse(true, msg);
 	}
 
-	dataManager.sendToClient(clientSocket, res);
+	networkManager.sendToClient(clientSocket, res);
 }
 
 void removeItem(
 	SOCKET& clientSocket, 
-	DataManager& dataManager,
+	NetworkManager& networkManager,
 	ItemManager& itemManager, 
 	StockManager& stockManager, 
 	std::shared_ptr<BaseRequest>& req
@@ -252,7 +252,7 @@ void removeItem(
 	{
 		msg = "해당 아이템은 재고가 남아있어 삭제할 수 없습니다.\n";
 		res = RemoveItemResponse(true, msg);
-		dataManager.sendToClient(clientSocket, res);
+		networkManager.sendToClient(clientSocket, res);
 		return;
 	}
 
@@ -269,24 +269,24 @@ void removeItem(
 		res = RemoveItemResponse(true, msg);
 	}
 
-	dataManager.sendToClient(clientSocket, res);
+	networkManager.sendToClient(clientSocket, res);
 }
 
 void printItemList(
 	SOCKET& clientSocket, 
-	DataManager& dataManager, 
+	NetworkManager& networkManager, 
 	ItemManager& itemManager
 ) {
 	std::string itemListStr = itemManager.itemListToString();
 	std::string msg = "success";
 
 	PrintItemResponse res(true, msg, itemListStr);
-	dataManager.sendToClient(clientSocket, res);
+	networkManager.sendToClient(clientSocket, res);
 }
 
 void addStock(
 	SOCKET& clientSocket, 
-	DataManager& dataManager,
+	NetworkManager& networkManager,
 	ItemManager& itemManager, 
 	StockManager& stockManager, 
 	std::shared_ptr<BaseRequest>& req
@@ -301,7 +301,7 @@ void addStock(
 	{
 		msg = "아이템이 존재하지 않습니다\n";
 		res = AddStockResponse(true, msg);
-		dataManager.sendToClient(clientSocket, res);
+		networkManager.sendToClient(clientSocket, res);
 		return;
 	}
 
@@ -319,12 +319,12 @@ void addStock(
 		res = AddStockResponse(true, msg);
 	}
 
-	dataManager.sendToClient(clientSocket, res);
+	networkManager.sendToClient(clientSocket, res);
 }
 
 void reduceStock(
 	SOCKET& clientSocket,
-	DataManager& dataManager, 
+	NetworkManager& networkManager, 
 	StockManager& stockManager, 
 	std::shared_ptr<BaseRequest>& req
 ) {
@@ -347,7 +347,7 @@ void reduceStock(
 		res = ReduceStockResponse(true, msg);
 	}
 
-	dataManager.sendToClient(clientSocket, res);
+	networkManager.sendToClient(clientSocket, res);
 }
 
 // TODO

@@ -1,7 +1,7 @@
 ﻿#include "pch.h"
 #include <iostream>
 #include <cassert>
-#include "DataManager.h"
+#include "NetworkManager.h"
 #include "BaseRequest.h"
 #include "BaseResponse.h"
 #include "RequestCommand.h"
@@ -17,7 +17,7 @@
 #include<queue>
 
 // 나중에는 send, receive 나누고 queue에 각각 넣어줄 것이다.
-void DataManager::sendToClient(SOCKET& socket, BaseResponse& res) {
+void NetworkManager::sendToClient(SOCKET& socket, BaseResponse& res) {
 	// TODO: 버퍼 용량 넘는 경우 처리 필요.
 	//int maxDataSize = PACKET_SIZE - RES_STATUS_SIZE - RES_MESSAGE_SIZE;
 
@@ -32,7 +32,7 @@ void DataManager::sendToClient(SOCKET& socket, BaseResponse& res) {
 	send(socket, sendBuffer, PACKET_SIZE, 0);
 }
 
-std::shared_ptr<BaseRequest> DataManager::recieveFromClient(SOCKET& socket) {
+std::shared_ptr<BaseRequest> NetworkManager::recieveFromClient(SOCKET& socket) {
 	// char recvBuffer[PACKET_SIZE];
 	char recvBuffer[PACKET_SIZE];
 	memset(recvBuffer, '\0', PACKET_SIZE);
@@ -57,7 +57,7 @@ std::shared_ptr<BaseRequest> DataManager::recieveFromClient(SOCKET& socket) {
 	return req;
 }
 
-std::shared_ptr<BaseRequest> DataManager::createRequestFromCommand(short cmd) {
+std::shared_ptr<BaseRequest> NetworkManager::createRequestFromCommand(short cmd) {
 	switch (cmd) {
 	case Request::Command::ADD_ITEM:
 		return std::make_shared<AddItemRequest>();

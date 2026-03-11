@@ -6,10 +6,10 @@
 class BaseRequest;
 class BaseResponse;
 
-class DataManager {
+class NetworkManager {
 public:
-	DataManager() = default;
-	virtual ~DataManager() = default;
+	NetworkManager() = default;
+	virtual ~NetworkManager() = default;
 
 	void sendToClient(SOCKET& socket, BaseResponse& res);
 	std::shared_ptr<BaseRequest> recieveFromClient(SOCKET& socket);
