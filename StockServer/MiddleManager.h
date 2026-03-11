@@ -4,7 +4,7 @@
 #include <mutex>
 //#include "BaseRequest.h"
 
-class DataManager;
+// class DataManager;
 class BaseRequest;
 
 class MiddleManager {
