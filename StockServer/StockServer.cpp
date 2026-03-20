@@ -128,7 +128,8 @@ void run(SOCKET& clientSocket) {
 		}
 	}
 
-	middleManagerT.join();
+	middleManager.quit();
+	middleManagerT.join(); // middleManagerT 스레드가 끝나기를 기다림.
 }
 
 bool execute(

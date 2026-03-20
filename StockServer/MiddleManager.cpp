@@ -4,13 +4,8 @@
 #include <thread>
 #include <chrono>
 
-MiddleManager::~MiddleManager() {
-	// 사용 메모리 및 변수 정리를 위한 로직이기 때문에 소멸자에서 수행.
-	quit();
-}
-
-void MiddleManager::initialize() {
-	loop();
+void MiddleManager::quit() {
+	_isQuitRequested = true;
 }
 
 StockServer::StatusCode MiddleManager::loop() {
