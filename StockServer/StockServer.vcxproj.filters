@@ -59,7 +59,7 @@
     <ClInclude Include="pch.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="DataManager.h">
+    <ClInclude Include="NetworkManager.h">
       <Filter>network</Filter>
     </ClInclude>
     <ClInclude Include="Item.h">

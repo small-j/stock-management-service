@@ -136,7 +136,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="DataManager.cpp" />
     <ClCompile Include="NetworkManager.cpp" />
     <ClCompile Include="Item.cpp" />
     <ClCompile Include="ItemManager.cpp" />
@@ -152,7 +151,6 @@
     <ClCompile Include="StockServer.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="DataManager.h" />
     <ClInclude Include="NetworkManager.h" />
     <ClInclude Include="Item.h" />
     <ClInclude Include="ItemManager.h" />
