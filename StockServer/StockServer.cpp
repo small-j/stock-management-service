@@ -41,7 +41,7 @@ using namespace std;
 int8_t DESTROY_CONNECTION_METHOD = -1;
 
 void ErrorHandler(const string& errMsg);
-void run(SOCKET& clientSocket);
+void run(SOCKET& clientSocket, MiddleManager& middleManager);
 bool execute(SOCKET& clientSocket, NetworkManager& networkManager, ItemManager& itemManager, StockManager& stockManager, std::shared_ptr<BaseRequest>& req);
 
 void menus(SOCKET& clientSocket, NetworkManager& networkManager, ItemManager& itemManager);
@@ -55,6 +55,16 @@ void printItemType(SOCKET& clientSocket, NetworkManager& networkManager);
 
 int main()
 {
+	MiddleManager middleManager;
+	std::thread middleManagerT(&MiddleManager::loop, &middleManager);
+
+	middleManager.addRequest(std::make_shared<AddItemRequest>()); // test
+
+	middleManager.addRequest(std::make_shared<RemoveItemRequest>());// test
+
+	middleManager.addRequest(std::make_shared<ReduceStockRequest>());// test
+
+
     WSADATA wsa;
     if (::WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
         ErrorHandler("원속을 초기화 할 수 없습니다.");
@@ -81,12 +91,16 @@ int main()
 	SOCKET clientSocket = accept(listenSocket, (SOCKADDR*)&acceptSocketAddr, &acceptSocketAddrSize);
 	cout << "클라이언트가 연결되었습니다.\n";
 
-	run(clientSocket);
+	run(clientSocket, middleManager);
 
     closesocket(clientSocket);
     closesocket(listenSocket);
 
     WSACleanup();
+
+	middleManager.quit();
+	middleManagerT.join(); // middleManagerT 스레드가 끝나기를 기다림.
+
     return 0;
 }
 
@@ -97,12 +111,10 @@ void ErrorHandler(const string& errMsg)
 	exit(1);
 }
 
-void run(SOCKET& clientSocket) {
+void run(SOCKET& clientSocket, MiddleManager& middleManager) {
 	NetworkManager networkManager;
 	ItemManager itemManager;
 	StockManager stockManager;
-	MiddleManager middleManager;
-	std::thread middleManagerT(&MiddleManager::loop, &middleManager);
 
 	while (true)
 	{
@@ -127,9 +139,6 @@ void run(SOCKET& clientSocket) {
 			break;
 		}
 	}
-
-	middleManager.quit();
-	middleManagerT.join(); // middleManagerT 스레드가 끝나기를 기다림.
 }
 
 bool execute(
