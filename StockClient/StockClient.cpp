@@ -102,12 +102,15 @@ void printMenu(SOCKET& serverSocket, DataManager dataManager)
 	GetMenusRequest req;
 	dataManager.sendToServer(serverSocket, req);
 
-	auto res = std::dynamic_pointer_cast<GetMenusResponse>(dataManager.recieveFromServer(serverSocket));
-
-	if (res->getStatus() == 1)
-		std::cout << res->toString();
-	else
-		std::cout << res->getMessage();
+	if (auto res = std::dynamic_pointer_cast<GetMenusResponse>(
+		dataManager.recieveFromServer(serverSocket)
+	)) {
+		if (res->getStatus() == 1)
+			std::cout << res->toString();
+		else
+			std::cout << res->getMessage();
+	}
+	// TODO: 에러 로그 처리
 }
 
 std::shared_ptr<GetItemTypesResponse> printItemTypes(SOCKET& serverSocket, DataManager dataManager)
@@ -123,7 +126,7 @@ std::shared_ptr<GetItemTypesResponse> printItemTypes(SOCKET& serverSocket, DataM
 void addItem(SOCKET& serverSocket, DataManager dataManager)
 {
 	std::shared_ptr<GetItemTypesResponse> itemTypesRes = printItemTypes(serverSocket, dataManager);
-	if (itemTypesRes->getStatus() != 1) {
+	if (!itemTypesRes || itemTypesRes->getStatus() != 1) {
 		std::cout << itemTypesRes->getMessage();
 		return;
 	}
@@ -140,9 +143,13 @@ void addItem(SOCKET& serverSocket, DataManager dataManager)
 	AddItemRequest req(name, itemType);
 	dataManager.sendToServer(serverSocket, req);
 	
-	auto res = std::dynamic_pointer_cast<AddItemResponse>(dataManager.recieveFromServer(serverSocket));
-	
-	std::cout << res->getMessage();
+	if (auto res = std::dynamic_pointer_cast<AddItemResponse>(
+		dataManager.recieveFromServer(serverSocket)
+	)) {
+		std::cout << res->getMessage();
+	}
+
+	// TODO: 에러 로그 추가
 }
 
 void removeItem(SOCKET& serverSocket, DataManager dataManager)
@@ -158,12 +165,17 @@ void removeItem(SOCKET& serverSocket, DataManager dataManager)
 
 	unsigned int castItemId = static_cast<unsigned int>(itemId);
 
+
 	RemoveItemRequest req(castItemId);
 	dataManager.sendToServer(serverSocket, req);
 
-	auto res = std::dynamic_pointer_cast<RemoveItemResponse>(dataManager.recieveFromServer(serverSocket));
+	if (auto res = std::dynamic_pointer_cast<RemoveItemResponse>(
+		dataManager.recieveFromServer(serverSocket)
+	)) {
+		std::cout << res->getMessage();
 
-	std::cout << res->getMessage();
+	}
+	// TODO: 에러 로그 추가
 }
 
 void printItemList(SOCKET& serverSocket, DataManager dataManager)
@@ -171,12 +183,15 @@ void printItemList(SOCKET& serverSocket, DataManager dataManager)
 	PrintItemRequest req;
 	dataManager.sendToServer(serverSocket, req);
 
-	auto res = std::dynamic_pointer_cast<PrintItemResponse>(dataManager.recieveFromServer(serverSocket));
-	
-	if (res->getStatus() == 1)
-		std::cout << res->getItemList();
-	else
-		std::cout << res->getMessage();
+	if (auto res = std::dynamic_pointer_cast<PrintItemResponse>(
+		dataManager.recieveFromServer(serverSocket)
+	)) {
+		if (res->getStatus() == 1)
+			std::cout << res->getItemList();
+		else
+			std::cout << res->getMessage();
+	}
+	// TODO: 에러 로그 추가
 }
 
 void addStock(SOCKET& serverSocket, DataManager dataManager)
@@ -200,13 +215,17 @@ void addStock(SOCKET& serverSocket, DataManager dataManager)
 
 	unsigned int castItemId = static_cast<unsigned int>(itemId);
 	unsigned int castCount = static_cast<unsigned int>(count);
+	// TODO: 치환 실패 시 에러 추가
 
 	AddStockRequest req(castItemId, castCount);
 	dataManager.sendToServer(serverSocket, req);
 
-	auto res = std::dynamic_pointer_cast<AddStockResponse>(dataManager.recieveFromServer(serverSocket));
-
-	std::cout << res->getMessage();
+	if (auto res = std::dynamic_pointer_cast<AddStockResponse>(
+		dataManager.recieveFromServer(serverSocket)
+	)) {
+		std::cout << res->getMessage();
+	}
+	// TODO: 에러 로그 추가
 }
 
 void reduceStock(SOCKET& serverSocket, DataManager dataManager)
@@ -234,9 +253,12 @@ void reduceStock(SOCKET& serverSocket, DataManager dataManager)
 	ReduceStockRequest req(castItemId, castCount);
 	dataManager.sendToServer(serverSocket, req);
 
-	auto res = std::dynamic_pointer_cast<ReduceStockResponse>(dataManager.recieveFromServer(serverSocket));
-
-	std::cout << res->getMessage();
+	if (auto res = std::dynamic_pointer_cast<ReduceStockResponse>(
+		dataManager.recieveFromServer(serverSocket)
+	)) {
+		std::cout << res->getMessage();
+	}
+	// TODO: 에러 로그 추가
 }
 
 bool isValidItemId(int itemId)
