@@ -36,12 +36,9 @@
 
 using namespace std;
 
-#define PORT 4578
-
 int8_t DESTROY_CONNECTION_METHOD = -1;
 
-void ErrorHandler(const string& errMsg);
-void run(SOCKET& clientSocket, MiddleManager& middleManager);
+void run(SOCKET clientSocket, MiddleManager& middleManager, NetworkManager& networkManager);
 bool execute(SOCKET& clientSocket, NetworkManager& networkManager, ItemManager& itemManager, StockManager& stockManager, std::shared_ptr<BaseRequest>& req);
 
 void menus(SOCKET& clientSocket, NetworkManager& networkManager, ItemManager& itemManager);
@@ -58,38 +55,14 @@ int main()
 	MiddleManager middleManager;
 	std::thread middleManagerT(&MiddleManager::loop, &middleManager);
 
-    WSADATA wsa;
-    if (::WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
-        ErrorHandler("원속을 초기화 할 수 없습니다.");
+	NetworkManager networkManager;
+	// TODO: networkManager에서는 middleManager를 몰랐으면 좋겠는데
+	std::thread networkManagerListenT(&NetworkManager::listenRequest, &networkManager, run, std::ref(middleManager)); // TODO: client 요청 + socket key를 middle manager에 추가하는 main의 함수 넘겨주기.
+	std::thread networkManagerResponseT(&NetworkManager::loop, &networkManager);
 
-    SOCKET listenSocket = ::socket(AF_INET, SOCK_STREAM, 0);
-    if (listenSocket == INVALID_SOCKET)
-        ErrorHandler("접속 대기 소켓을 생성할 수 없습니다.");
-
-    SOCKADDR_IN listenSocketAddr = { 0 };
-    listenSocketAddr.sin_family = AF_INET;
-    listenSocketAddr.sin_port = htons(PORT); // 요청을 수신할 소켓 프로세스가 사용할 포트번호.
-    listenSocketAddr.sin_addr.s_addr = htonl(INADDR_ANY); // 어떤 주소든 받는다.
-    
-    // 소켓을 특정 주소 및 포트와 연결.
-    bind(listenSocket, (SOCKADDR*)&listenSocketAddr, sizeof(listenSocketAddr));
-    // 연결 수신 대기 함수:listen.
-    listen(listenSocket, SOMAXCONN); // 소켓이 동시에 처리할 수 있는 최대 연결 수.
-
-    // 연결 클라이언트 정보 수신할 구조체.
-    SOCKADDR_IN acceptSocketAddr = {};
-    int acceptSocketAddrSize = sizeof(acceptSocketAddr);
-
-
-	SOCKET clientSocket = accept(listenSocket, (SOCKADDR*)&acceptSocketAddr, &acceptSocketAddrSize);
-	cout << "클라이언트가 연결되었습니다.\n";
-
-	run(clientSocket, middleManager);
-
-    closesocket(clientSocket);
-    closesocket(listenSocket);
-
-    WSACleanup();
+	networkManager.quit();
+	networkManagerListenT.join();
+	networkManagerResponseT.join();
 
 	middleManager.quit();
 	middleManagerT.join(); // middleManagerT 스레드가 끝나기를 기다림.
@@ -97,15 +70,7 @@ int main()
     return 0;
 }
 
-void ErrorHandler(const string& errMsg)
-{
-	cout << errMsg << endl;
-	::WSACleanup();
-	exit(1);
-}
-
-void run(SOCKET& clientSocket, MiddleManager& middleManager) {
-	NetworkManager networkManager;
+void run(SOCKET clientSocket, MiddleManager& middleManager, NetworkManager& networkManager) {
 	ItemManager itemManager;
 	StockManager stockManager;
 
@@ -114,10 +79,10 @@ void run(SOCKET& clientSocket, MiddleManager& middleManager) {
 		std::shared_ptr<BaseRequest> req = networkManager.recieveFromClient(clientSocket);
 		if (req == nullptr) {
 			// log 처리
-			break;
+			break; 
 		}
 
-		// TODO 추가 실패하면 3번 재시도 및 3번 실패하면 유저에게 실패 메시지 반환하기.
+		// TODO 추가 실패하면 3번 재시도. 3번 실패하면 유저에게 실패 메시지 반환하기.
 		middleManager.addRequest(req); 
 		bool exeResult = execute(clientSocket, networkManager, itemManager, stockManager, req);
 		
