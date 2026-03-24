@@ -58,13 +58,6 @@ int main()
 	MiddleManager middleManager;
 	std::thread middleManagerT(&MiddleManager::loop, &middleManager);
 
-	middleManager.addRequest(std::make_shared<AddItemRequest>()); // test
-
-	middleManager.addRequest(std::make_shared<RemoveItemRequest>());// test
-
-	middleManager.addRequest(std::make_shared<ReduceStockRequest>());// test
-
-
     WSADATA wsa;
     if (::WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
         ErrorHandler("원속을 초기화 할 수 없습니다.");
