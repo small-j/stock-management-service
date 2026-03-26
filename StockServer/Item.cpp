@@ -4,14 +4,14 @@
 #include "ItemTypeHelper.h"
 
 // 화면상에서는 마이너스를 받아서 처리하도록.
-Item::Item(const unsigned int id, const string& name, const ItemType& type) 
+Item::Item(const unsigned int id, const std::string& name, const ItemType& type)
 	: _id(id), _name(name), _type(type) {}
 
 const unsigned int Item::getId() const {
 	return _id;
 }
 
-const string& Item::getName() const {
+const std::string& Item::getName() const {
 	return _name;
 }
 
@@ -26,13 +26,13 @@ bool Item::isValid() const {
 	return true;
 }
 
-const string Item::toString() const {
-	string enumToString;
+const std::string Item::toString() const {
+	std::string enumToString;
 	if (ItemTypeHelper::toString(_type, &enumToString)) {
 		return std::format("Item ID: {}, Name: {}, Type: {}", _id, _name, enumToString);
 	}
 	else {
-		throw::runtime_error("Item::toString() - ItemType to string conversion failed.");
+		throw::std::runtime_error("Item::toString() - ItemType to string conversion failed.");
 	}
 
 	return "";

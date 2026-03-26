@@ -1,7 +1,5 @@
 ﻿#pragma once
 
-using namespace std;
-
 // count가 0이면 stock이 없어진다.
 class Stock {
 public:

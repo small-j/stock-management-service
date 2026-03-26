@@ -13,7 +13,7 @@ const unsigned int ItemManager::publishItemId() {
 }
 
 // item 동적할당. 여기서 아이디 발급 실패시 예외처리.
-StockServer::StatusCode ItemManager::addItem(const string& name, const ItemType& type) {
+StockServer::StatusCode ItemManager::addItem(const std::string& name, const ItemType& type) {
 	if (name.length() == 0) return StockServer::StatusCode::CANCELLED;
 	if (ItemTypeHelper::isValid(type) == false) return StockServer::StatusCode::CANCELLED;
 
@@ -21,7 +21,7 @@ StockServer::StatusCode ItemManager::addItem(const string& name, const ItemType&
 	if (id == Item::INVALID_ID) return StockServer::StatusCode::CANCELLED;
 
 	// TODO: 할당이 안되는 경우 처리 필요.
-	shared_ptr<Item> itemSp = make_shared<Item>(id, name, type);
+	std::shared_ptr<Item> itemSp = make_shared<Item>(id, name, type);
 
 	if (itemSp.get() == nullptr || !itemSp->isValid()) return StockServer::StatusCode::CANCELLED;
 
@@ -40,7 +40,7 @@ StockServer::StatusCode ItemManager::removeItem(const unsigned int itemId) {
 	return StockServer::StatusCode::OK;
 }
 
-const shared_ptr<Item> ItemManager::findItemById(const unsigned int itemId) const {
+const std::shared_ptr<Item> ItemManager::findItemById(const unsigned int itemId) const {
 	//map search 
 
 	auto itemItr = _items.find(itemId);
@@ -50,7 +50,7 @@ const shared_ptr<Item> ItemManager::findItemById(const unsigned int itemId) cons
 
 std::string ItemManager::itemListToString() const
 {
-	string result;
+	std::string result;
 	for (const auto& [id, item] : _items) {
 		result += item->toString() + "\n";
 	}
