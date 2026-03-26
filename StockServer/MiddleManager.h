@@ -4,7 +4,6 @@
 #include <mutex>
 //#include "BaseRequest.h"
 
-// class DataManager;
 class BaseRequest;
 
 class MiddleManager {
@@ -30,5 +29,4 @@ public:
 	// TODO: 
 	//StockServer::StatusCode callApi();
 	//std::shared_ptr<BaseResponse> makeResponse();
-	//void pushJobToNextStepQueue();
 };
