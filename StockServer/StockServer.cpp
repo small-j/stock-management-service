@@ -6,9 +6,6 @@
 #include <charconv>
 #include <optional>
 #include <algorithm>
-#include <WinSock2.h>
-#include <WS2tcpip.h>
-#pragma comment(lib, "ws2_32.lib")
 
 #include <thread>
 
@@ -34,20 +31,19 @@
 #include "ReduceStockRequest.h"
 #include "ReduceStockResponse.h"
 
-using namespace std;
 
 int8_t DESTROY_CONNECTION_METHOD = -1;
 
-void run(SOCKET clientSocket, MiddleManager& middleManager, NetworkManager& networkManager);
-bool execute(SOCKET& clientSocket, NetworkManager& networkManager, ItemManager& itemManager, StockManager& stockManager, std::shared_ptr<BaseRequest>& req);
+void run(int socketKey, std::shared_ptr<BaseRequest> req, NetworkManager& networkManager);
+bool execute(int socketKey, NetworkManager& networkManager, ItemManager& itemManager, StockManager& stockManager, std::shared_ptr<BaseRequest> req);
 
-void menus(SOCKET& clientSocket, NetworkManager& networkManager, ItemManager& itemManager);
-void addItem(SOCKET& clientSocket, NetworkManager& networkManager, ItemManager& itemManager, std::shared_ptr<BaseRequest>& req);
-void removeItem(SOCKET& clientSocket, NetworkManager& networkManager, ItemManager& itemManager, StockManager& stockManager, std::shared_ptr<BaseRequest>& req);
-void printItemList(SOCKET& clientSocket, NetworkManager& networkManager, ItemManager& itemManager);
-void addStock(SOCKET& clientSocket, NetworkManager& networkManager, ItemManager& itemManager, StockManager& stockManager, std::shared_ptr<BaseRequest>& req);
-void reduceStock(SOCKET& clientSocket, NetworkManager& networkManager, StockManager& stockManager, std::shared_ptr<BaseRequest>& req);
-void printItemType(SOCKET& clientSocket, NetworkManager& networkManager);
+void menus(int socketKey, NetworkManager& networkManager, ItemManager& itemManager);
+void addItem(int socketKey, NetworkManager& networkManager, ItemManager& itemManager, std::shared_ptr<BaseRequest> req);
+void removeItem(int socketKey, NetworkManager& networkManager, ItemManager& itemManager, StockManager& stockManager, std::shared_ptr<BaseRequest> req);
+void printItemList(int socketKey, NetworkManager& networkManager, ItemManager& itemManager);
+void addStock(int socketKey, NetworkManager& networkManager, ItemManager& itemManager, StockManager& stockManager, std::shared_ptr<BaseRequest> req);
+void reduceStock(int socketKey, NetworkManager& networkManager, StockManager& stockManager, std::shared_ptr<BaseRequest> req);
+void printItemType(int socketKey, NetworkManager& networkManager);
 
 
 int main()
@@ -57,8 +53,10 @@ int main()
 
 	NetworkManager networkManager;
 	// TODO: networkManager에서는 middleManager를 몰랐으면 좋겠는데
-	std::thread networkManagerListenT(&NetworkManager::listenRequest, &networkManager, run, std::ref(middleManager)); // TODO: client 요청 + socket key를 middle manager에 추가하는 main의 함수 넘겨주기.
+	std::thread networkManagerListenT(&NetworkManager::listenRequest, &networkManager, run);
 	std::thread networkManagerResponseT(&NetworkManager::loop, &networkManager);
+
+	while (true) {}
 
 	networkManager.quit();
 	networkManagerListenT.join();
@@ -70,65 +68,50 @@ int main()
     return 0;
 }
 
-void run(SOCKET clientSocket, MiddleManager& middleManager, NetworkManager& networkManager) {
+void run(int socketKey, std::shared_ptr<BaseRequest> req, NetworkManager& networkManager) {
 	ItemManager itemManager;
 	StockManager stockManager;
 
-	while (true)
-	{
-		std::shared_ptr<BaseRequest> req = networkManager.recieveFromClient(clientSocket);
-		if (req == nullptr) {
-			// log 처리
-			break; 
-		}
+	// TODO: socketKey, req 를 middleManager에 전달.
 
-		// TODO 추가 실패하면 3번 재시도. 3번 실패하면 유저에게 실패 메시지 반환하기.
-		middleManager.addRequest(req); 
-		bool exeResult = execute(clientSocket, networkManager, itemManager, stockManager, req);
+	bool exeResult = execute(socketKey, networkManager, itemManager, stockManager, req);
 		
-		if (exeResult == false)
-		{
-			// TODO: 아래 방식 개선 필요.
-			char response[PACKET_SIZE];
-			memset(response, '\0', PACKET_SIZE);
-			memcpy(response, &DESTROY_CONNECTION_METHOD, sizeof(DESTROY_CONNECTION_METHOD));
-
-			send(clientSocket, response, sizeof(response), 0);
-			break;
-		}
+	if (exeResult == false)
+	{
+		// TODO: 실패 시 서버에서 결과 반환 처리.
 	}
 }
 
 bool execute(
-	SOCKET& clientSocket, 
+	int socketKey,
 	NetworkManager& networkManager, 
 	ItemManager& itemManager, 
 	StockManager& stockManager, 
-	std::shared_ptr<BaseRequest>&req)
+	std::shared_ptr<BaseRequest> req)
 {
 
-	switch (req.get()->getCommand())
+	switch (req->getCommand())
 	{
 	case Request::Command::ADD_ITEM:
-		addItem(clientSocket, networkManager,  itemManager, req);
+		addItem(socketKey, networkManager, itemManager, req);
 		return true;
 	case Request::Command::REMOVE_ITEM:
-		removeItem(clientSocket, networkManager, itemManager, stockManager, req);
+		removeItem(socketKey, networkManager, itemManager, stockManager, req);
 		return true;
 	case Request::Command::PRINT_ITEM:
-		printItemList(clientSocket, networkManager, itemManager);
+		printItemList(socketKey, networkManager, itemManager);
 		return true;
 	case Request::Command::ADD_STOCK:
-		addStock(clientSocket, networkManager, itemManager, stockManager, req);
+		addStock(socketKey, networkManager, itemManager, stockManager, req);
 		return true;
 	case Request::Command::REDUCE_STOCK:
-		reduceStock(clientSocket, networkManager, stockManager, req);
+		reduceStock(socketKey, networkManager, stockManager, req);
 		return true;
 	case Request::Command::GET_ITEM_TYPE:
-		printItemType(clientSocket, networkManager);
+		printItemType(socketKey, networkManager);
 		return true;
 	case Request::Command::GET_MENU:
-		menus(clientSocket, networkManager, itemManager);
+		menus(socketKey, networkManager, itemManager);
 		return true;
 	default:
 		return false;
@@ -137,7 +120,7 @@ bool execute(
 
 // TODO: 서버에서 제공하는 API 목록으로 개선 필요.
 void menus(
-	SOCKET& clientSocket, 
+	int socketKey,
 	NetworkManager& networkManager, 
 	ItemManager& itemManager
 ) {
@@ -149,7 +132,7 @@ void menus(
 		"5. 재고 삭제",
 		"그 외. 종료"
 	};
-	string datas;
+	std::string datas;
 	int len = std::size(menuStr);
 	for (int i = 0; i < len; i++)
 	{
@@ -158,16 +141,17 @@ void menus(
 	}
 
 	std::string msg = "success";
-	GetMenusResponse res(true, msg, datas);
-	networkManager.sendToClient(clientSocket, res);
+	std::shared_ptr<BaseResponse> res = std::make_shared<GetMenusResponse>(true, msg, datas);
+	// TODO: res nullptr 처리.
+	networkManager.sendToClient(socketKey, res);
 }
 
-void printItemType(SOCKET& clientSocket, NetworkManager& networkManager)
+void printItemType(int socketKey, NetworkManager& networkManager)
 {
 	std::vector<std::string> itemTypeStr = ItemTypeHelper::getAllItemInfosToString();
 	std::string msg = "success";
 	
-	string datas;
+	std::string datas;
 	int len = static_cast<int>(itemTypeStr.size());
 	for (int i = 0; i < len; i++)
 	{
@@ -175,18 +159,19 @@ void printItemType(SOCKET& clientSocket, NetworkManager& networkManager)
 		if (i != len - 1) datas += ',';
 	}
 
-	GetItemTypesResponse res(true, msg, datas);
-	networkManager.sendToClient(clientSocket, res);
+	std::shared_ptr<BaseResponse> res = std::make_shared<GetItemTypesResponse>(true, msg, datas);
+	// TODO: res nullptr 처리.
+	networkManager.sendToClient(socketKey, res);
 }
 
 void addItem(
-	SOCKET& clientSocket, 
+	int socketKey,
 	NetworkManager& networkManager,
 	ItemManager& itemManager, 
-	std::shared_ptr<BaseRequest>& req
+	std::shared_ptr<BaseRequest> req
 ) {
 	auto paredReq = std::dynamic_pointer_cast<AddItemRequest>(req);
-	AddItemResponse res;
+	std::shared_ptr<BaseResponse> res = nullptr;
 
 	if (itemManager.addItem(
 		paredReq.get() ->getName(),
@@ -194,33 +179,36 @@ void addItem(
 			) == StockServer::StatusCode::OK
 		) {
 		std::string msg = "아이템이 추가되었습니다.\n";
-		res = AddItemResponse(true, msg);
+		res = std::make_shared<AddItemResponse>(true, msg);
 	}
 	else {
 		std::string msg = "아이템 추가에 실패했습니다.\n";
-		res = AddItemResponse(true, msg);
+		res = std::make_shared<AddItemResponse>(false, msg);
 	}
-
-	networkManager.sendToClient(clientSocket, res);
+	
+	// TODO: res nullptr 처리.
+	networkManager.sendToClient(socketKey, res);
 }
 
 void removeItem(
-	SOCKET& clientSocket, 
+	int socketKey,
 	NetworkManager& networkManager,
 	ItemManager& itemManager, 
 	StockManager& stockManager, 
-	std::shared_ptr<BaseRequest>& req
+	std::shared_ptr<BaseRequest> req
 ) {
 	auto paredReq = std::dynamic_pointer_cast<RemoveItemRequest>(req);
-	RemoveItemResponse res;
-	
+	std::shared_ptr<BaseResponse> res = nullptr;
+
 	std::string msg;
-	shared_ptr<Stock> stock = stockManager.findStockByItemId(paredReq.get()->getItemId());
+	std::shared_ptr<Stock> stock = stockManager.findStockByItemId(paredReq.get()->getItemId());
 	if (stock != nullptr)
 	{
 		msg = "해당 아이템은 재고가 남아있어 삭제할 수 없습니다.\n";
-		res = RemoveItemResponse(true, msg);
-		networkManager.sendToClient(clientSocket, res);
+		res = std::make_shared<RemoveItemResponse>(false, msg);
+		// TODO: res nullptr 처리.
+
+		networkManager.sendToClient(socketKey, res);
 		return;
 	}
 
@@ -229,47 +217,50 @@ void removeItem(
 	) == StockServer::StatusCode::OK)
 	{
 		msg = std::to_string(paredReq.get()->getItemId()) + " 아이템이 삭제되었습니다.\n";
-		res = RemoveItemResponse(true, msg);
+		res = std::make_shared<RemoveItemResponse>(true, msg);
 	}
 	else
 	{
 		msg = "아이템을 삭제할 수 없습니다.\n";
-		res = RemoveItemResponse(true, msg);
+		res = std::make_shared<RemoveItemResponse>(false, msg);
 	}
 
-	networkManager.sendToClient(clientSocket, res);
+	// TODO: res nullptr 처리.
+	networkManager.sendToClient(socketKey, res);
 }
 
 void printItemList(
-	SOCKET& clientSocket, 
+	int socketKey,
 	NetworkManager& networkManager, 
 	ItemManager& itemManager
 ) {
 	std::string itemListStr = itemManager.itemListToString();
 	std::string msg = "success";
-
-	PrintItemResponse res(true, msg, itemListStr);
-	networkManager.sendToClient(clientSocket, res);
+	
+	std::shared_ptr<BaseResponse> res = std::make_shared<PrintItemResponse>(true, msg, itemListStr);
+	// TODO: res nullptr 처리.
+	networkManager.sendToClient(socketKey, res);
 }
 
 void addStock(
-	SOCKET& clientSocket, 
+	int socketKey,
 	NetworkManager& networkManager,
 	ItemManager& itemManager, 
 	StockManager& stockManager, 
-	std::shared_ptr<BaseRequest>& req
+	std::shared_ptr<BaseRequest> req
 ) {
 	auto paredReq = std::dynamic_pointer_cast<AddStockRequest>(req);
-	AddStockResponse res;
+	std::shared_ptr<BaseResponse> res = nullptr;
 
 	std::string msg;
 
-	shared_ptr<Item> item = itemManager.findItemById(paredReq.get()->getItemId());
+	std::shared_ptr<Item> item = itemManager.findItemById(paredReq.get()->getItemId());
 	if (item == nullptr)
 	{
 		msg = "아이템이 존재하지 않습니다\n";
-		res = AddStockResponse(true, msg);
-		networkManager.sendToClient(clientSocket, res);
+		res = std::make_shared<AddStockResponse>(false, msg);
+
+		networkManager.sendToClient(socketKey, res);
 		return;
 	}
 
@@ -279,25 +270,26 @@ void addStock(
 	) == StockServer::StatusCode::OK)
 	{
 		msg = "재고가 늘어났습니다.\n";
-		res = AddStockResponse(true, msg);
+		res = std::make_shared<AddStockResponse>(true, msg);
 	}
 	else
 	{
 		msg = "재고를 추가할 수 없습니다.\n";
-		res = AddStockResponse(true, msg);
+		res = std::make_shared<AddStockResponse>(false, msg);
 	}
 
-	networkManager.sendToClient(clientSocket, res);
+	// TODO: res nullptr 처리.
+	networkManager.sendToClient(socketKey, res);
 }
 
 void reduceStock(
-	SOCKET& clientSocket,
+	int socketKey,
 	NetworkManager& networkManager, 
 	StockManager& stockManager, 
-	std::shared_ptr<BaseRequest>& req
+	std::shared_ptr<BaseRequest> req
 ) {
 	auto paredReq = std::dynamic_pointer_cast<ReduceStockRequest>(req);
-	ReduceStockResponse res;
+	std::shared_ptr<BaseResponse> res = nullptr;
 
 	std::string msg;
 
@@ -307,15 +299,16 @@ void reduceStock(
 	) == StockServer::StatusCode::OK)
 	{
 		msg = "재고가 삭제되었습니다.\n";
-		res = ReduceStockResponse(true, msg);
+		res = std::make_shared<ReduceStockResponse>(true, msg);
 	}
 	else
 	{
 		msg = "재고 삭제에 실패했습니다.\n";
-		res = ReduceStockResponse(true, msg);
+		res = std::make_shared<ReduceStockResponse>(false , msg);
 	}
 
-	networkManager.sendToClient(clientSocket, res);
+	// TODO: res nullptr 처리.
+	networkManager.sendToClient(socketKey, res);
 }
 
 // TODO
@@ -326,10 +319,10 @@ void reduceStock(
 //			+ "재고 수 : "
 //			+ std::to_string(stock->getCount())
 //			+ "\n";
-//		printFromSocket(clientSocket, 1, msg, data);
+//		printFromSocket(socketKey, 1, msg, data);
 //	}
 //	else {
 //		msg += "재고 조회에 실패했습니다. 다시 시도해주세요.\n";
-//		printFromSocket(clientSocket, 0, msg);
+//		printFromSocket(socketKey, 0, msg);
 //	}
 //}
