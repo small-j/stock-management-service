@@ -1,14 +1,14 @@
 ﻿#include "pch.h"
-#include "MiddleManager.h"
+#include "DataManager.h"
 #include "BaseRequest.h"
 #include <thread>
 #include <chrono>
 
-void MiddleManager::quit() {
+void DataManager::quit() {
 	_isQuitRequested = true;
 }
 
-StockServer::StatusCode MiddleManager::loop() {
+StockServer::StatusCode DataManager::loop() {
 	while (isQuitRequested() == false) {
 		if (_jobQueue.empty()) {
 			std::this_thread::sleep_for(std::chrono::milliseconds(500)); // cpu 점유 방지.
@@ -24,13 +24,13 @@ StockServer::StatusCode MiddleManager::loop() {
 	return StockServer::StatusCode::OK;
 }
 
-StockServer::StatusCode MiddleManager::execute(std::shared_ptr<BaseRequest> req) {
+StockServer::StatusCode DataManager::execute(std::shared_ptr<BaseRequest> req) {
 	if (!req) return StockServer::StatusCode::CANCELLED;
 	std::cout << req->getCommand() << "추출 성공!" << std::endl; // TODO : 변경
 	return StockServer::StatusCode::OK;
 }
 
-StockServer::StatusCode MiddleManager::addRequest(std::shared_ptr<BaseRequest> req) {
+StockServer::StatusCode DataManager::addRequest(std::shared_ptr<BaseRequest> req) {
 	if (!req) return StockServer::StatusCode::CANCELLED;
 
 	std::lock_guard<std::mutex> lock(_jobQueueMutex);
@@ -38,7 +38,7 @@ StockServer::StatusCode MiddleManager::addRequest(std::shared_ptr<BaseRequest> r
 	return StockServer::StatusCode::OK;
 }
 
-StockServer::StatusCode MiddleManager::popRequest() {
+StockServer::StatusCode DataManager::popRequest() {
 	std::lock_guard<std::mutex> lock(_jobQueueMutex);
 
 	_jobQueue.pop();

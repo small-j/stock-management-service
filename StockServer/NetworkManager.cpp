@@ -10,8 +10,6 @@
 #include "BaseResponse.h"
 #include "RequestCommand.h"
 
-#include "MiddleManager.h"
-
 #include "AddItemRequest.h"
 #include "AddItemResponse.h"
 #include "RemoveItemRequest.h"

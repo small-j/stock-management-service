@@ -139,7 +139,7 @@
     <ClCompile Include="NetworkManager.cpp" />
     <ClCompile Include="Item.cpp" />
     <ClCompile Include="ItemManager.cpp" />
-    <ClCompile Include="MiddleManager.cpp" />
+    <ClCompile Include="DataManager.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
@@ -156,7 +156,7 @@
     <ClInclude Include="ItemManager.h" />
     <ClInclude Include="ItemType.h" />
     <ClInclude Include="ItemTypeHelper.h" />
-    <ClInclude Include="MiddleManager.h" />
+    <ClInclude Include="DataManager.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Status.h" />
     <ClInclude Include="Stock.h" />

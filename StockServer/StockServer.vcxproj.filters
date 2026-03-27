@@ -51,7 +51,7 @@
     <ClCompile Include="StockManager.cpp">
       <Filter>manager</Filter>
     </ClCompile>
-    <ClCompile Include="MiddleManager.cpp">
+    <ClCompile Include="DataManager.cpp">
       <Filter>manager</Filter>
     </ClCompile>
   </ItemGroup>
@@ -80,7 +80,7 @@
     <ClInclude Include="StockManager.h">
       <Filter>manager</Filter>
     </ClInclude>
-    <ClInclude Include="MiddleManager.h">
+    <ClInclude Include="DataManager.h">
       <Filter>manager</Filter>
     </ClInclude>
     <ClInclude Include="Status.h">

@@ -10,7 +10,6 @@
 
 class BaseRequest;
 class BaseResponse;
-class MiddleManager;
 
 #define PORT 4578
 

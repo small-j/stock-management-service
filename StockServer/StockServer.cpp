@@ -15,7 +15,7 @@
 #include "Item.h"
 #include "Stock.h"
 #include "NetworkManager.h"
-#include "MiddleManager.h"
+#include "DataManager.h"
 #include "RequestCommand.h"
 #include "BaseRequest.h"
 #include "BaseResponse.h"
@@ -48,11 +48,11 @@ void printItemType(int socketKey, NetworkManager& networkManager);
 
 int main()
 {
-	MiddleManager middleManager;
-	std::thread middleManagerT(&MiddleManager::loop, &middleManager);
+	DataManager dataManager;
+	std::thread dataManagerT(&DataManager::loop, &dataManager);
 
 	NetworkManager networkManager;
-	// TODO: networkManager에서는 middleManager를 몰랐으면 좋겠는데
+	// TODO: networkManager에서는 dataManager를 몰랐으면 좋겠는데
 	std::thread networkManagerListenT(&NetworkManager::listenRequest, &networkManager, run);
 	std::thread networkManagerResponseT(&NetworkManager::loop, &networkManager);
 
@@ -62,8 +62,8 @@ int main()
 	networkManagerListenT.join();
 	networkManagerResponseT.join();
 
-	middleManager.quit();
-	middleManagerT.join(); // middleManagerT 스레드가 끝나기를 기다림.
+	dataManager.quit();
+	dataManagerT.join(); // dataManagerT 스레드가 끝나기를 기다림.
 
     return 0;
 }
@@ -72,7 +72,7 @@ void run(int socketKey, std::shared_ptr<BaseRequest> req, NetworkManager& networ
 	ItemManager itemManager;
 	StockManager stockManager;
 
-	// TODO: socketKey, req 를 middleManager에 전달.
+	// TODO: socketKey, req 를 dataManager에 전달.
 
 	bool exeResult = execute(socketKey, networkManager, itemManager, stockManager, req);
 		

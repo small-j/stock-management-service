@@ -6,10 +6,10 @@
 
 class BaseRequest;
 
-class MiddleManager {
+class DataManager {
 public:
-	MiddleManager() = default;
-	virtual ~MiddleManager() = default;
+	DataManager() = default;
+	virtual ~DataManager() = default;
 
 private:
 	bool _isQuitRequested = false;
