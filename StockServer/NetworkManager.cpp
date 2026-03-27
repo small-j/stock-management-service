@@ -86,7 +86,7 @@ void NetworkManager::listenRequest(void (*run)(int, std::shared_ptr<BaseRequest>
 			// log 처리
 			// TODO: 유저에게 실패 response 반환. -> 요청 형식이 잘못되었습니다.
 			clearSocket(socketKey);
-			continue;
+			break;
 		}
 
 		run(socketKey, req, std::ref(*this));
