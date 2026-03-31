@@ -2,14 +2,21 @@
 #include <WinSock2.h>
 #include <WS2tcpip.h>
 #pragma comment(lib, "ws2_32.lib")
+
 #include <mutex>
 #include <queue>
 #include <map>
+#include <functional>
+
+// TODO: 삭제
+#include "DataManager.h"
 
 #define PACKET_SIZE 1024 // byte
 
 class BaseRequest;
 class BaseResponse;
+
+class DataManager;
 
 #define PORT 4578
 
@@ -44,7 +51,7 @@ public:
 	}
 	void quit();
 
-	void listenRequest(void (*run)(int, std::shared_ptr<BaseRequest>, NetworkManager&));
+	void listenRequest(DataManager& dataManager);
 
 	std::shared_ptr<BaseRequest> recieveFromClient(SOCKET& socket);
 	std::shared_ptr<BaseRequest> createRequestFromCommand(short cmd);

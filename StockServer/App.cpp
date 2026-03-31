@@ -1,15 +1,17 @@
+﻿#include "pch.h"
 #include "App.h"
 #include <thread>
 
 void App::run() {
-	std::thread dataManagerT(&DataManager::loop, &dataManager, NetworkManager::addResponse);
+	std::thread dataManagerT(&DataManager::loop, &dataManager, std::ref(networkManager));
 
-	std::thread networkManagerListenT(&NetworkManager::listenRequest, &networkManager, DataManager::addRequest);
+	std::thread networkManagerListenT(&NetworkManager::listenRequest, &networkManager, std::ref(dataManager));
 	std::thread networkManagerResponseT(&NetworkManager::loop, &networkManager);
 
 	setStatus(StockServer::ThreadStatus::WORKING);
+
 	while (true) { 
-		if () break; // 유저 입력(ctrl + C) 받을때까지 while문 유지.
+		// if () break; // TODO: 유저 입력(ctrl + C) 받을때까지 while문 유지.
 	}
 
 	networkManager.quit();
@@ -21,3 +23,11 @@ void App::run() {
 
 	setStatus(StockServer::ThreadStatus::QUIT);
 }
+
+//StockServer::StatusCode App::addRequest(int socketKey, std::shared_ptr<BaseRequest> req) {
+//	return dataManager.addRequest(socketKey, req);
+//}
+//
+//StockServer::StatusCode App::addResponse(int socketKey, std::shared_ptr<BaseResponse> res) {
+//	return networkManager.addResponse(socketKey, res);
+//}

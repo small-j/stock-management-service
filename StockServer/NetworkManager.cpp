@@ -25,6 +25,8 @@
 #include "GetMenusRequest.h"
 #include "GetMenusResponse.h"
 
+
+
 void NetworkManager::quit() {
 	_isQuitRequested = true;
 }
@@ -51,7 +53,7 @@ SOCKET NetworkManager::initSocket(WSADATA& wsa) {
 	return listenSocket;
 }
 
-void NetworkManager::listenRequest(void (*run)(int, std::shared_ptr<BaseRequest>, NetworkManager&)) {
+void NetworkManager::listenRequest(DataManager& dataManager) {
 	WSADATA wsa;
 	if (::WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
 		ErrorHandler("원속을 초기화 할 수 없습니다.");
@@ -82,6 +84,7 @@ void NetworkManager::listenRequest(void (*run)(int, std::shared_ptr<BaseRequest>
 	// 연결 수신 대기
 	while (isQuitRequested() == false) {
 		std::shared_ptr<BaseRequest> req = recieveFromClient(clientSocket);
+
 		if (req == nullptr) {
 			// log 처리
 			// TODO: 유저에게 실패 response 반환. -> 요청 형식이 잘못되었습니다.
@@ -89,7 +92,7 @@ void NetworkManager::listenRequest(void (*run)(int, std::shared_ptr<BaseRequest>
 			break;
 		}
 
-		run(socketKey, req, std::ref(*this));
+		dataManager.addRequest(socketKey, req);
 	}
 
 	clearSocket(1); // TODO: 일단 현재는 싱글 클라이언트.
@@ -150,7 +153,9 @@ std::shared_ptr<BaseRequest> NetworkManager::recieveFromClient(SOCKET& socket) {
 
 	INT32 result = recv(socket, recvBuffer, PACKET_SIZE, 0);
 
-	if (result == -1 || result == 0) return nullptr;
+	if (result == -1 || result == 0) {
+		return nullptr;
+	}
 
 	BaseRequest baseReq(Request::Command::UNKNOWN);
 	baseReq.deserialize(recvBuffer);
@@ -198,7 +203,6 @@ StockServer::StatusCode NetworkManager::loop() {
 		else {
 			// execute(_jobQueue.front());
 			sendToClient(_jobQueue.front().first, _jobQueue.front().second);
-			clearSocket(_jobQueue.front().first);
 
 			popResponse();
 		}
