@@ -2,10 +2,15 @@
 #include "App.h"
 #include <thread>
 
-void App::run() {
-	std::thread dataManagerT(&DataManager::loop, &dataManager, std::ref(networkManager));
+App::App() :_appStatus(StockServer::ThreadStatus::INIT),
+	networkManager(this),
+	dataManager(this) {
+}
 
-	std::thread networkManagerListenT(&NetworkManager::listenRequest, &networkManager, std::ref(dataManager));
+void App::run() {
+	std::thread dataManagerT(&DataManager::loop, &dataManager);
+
+	std::thread networkManagerListenT(&NetworkManager::listenRequest, &networkManager);
 	std::thread networkManagerResponseT(&NetworkManager::loop, &networkManager);
 
 	setStatus(StockServer::ThreadStatus::WORKING);
@@ -24,10 +29,10 @@ void App::run() {
 	setStatus(StockServer::ThreadStatus::QUIT);
 }
 
-//StockServer::StatusCode App::addRequest(int socketKey, std::shared_ptr<BaseRequest> req) {
-//	return dataManager.addRequest(socketKey, req);
-//}
-//
-//StockServer::StatusCode App::addResponse(int socketKey, std::shared_ptr<BaseResponse> res) {
-//	return networkManager.addResponse(socketKey, res);
-//}
+StockServer::StatusCode App::addRequest(int socketKey, std::shared_ptr<BaseRequest> req) {
+	return dataManager.addRequest(socketKey, req);
+}
+
+StockServer::StatusCode App::addResponse(int socketKey, std::shared_ptr<BaseResponse> res) {
+	return networkManager.addResponse(socketKey, res);
+}

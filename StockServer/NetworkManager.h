@@ -8,15 +8,12 @@
 #include <map>
 #include <functional>
 
-// TODO: 삭제
-#include "DataManager.h"
-
 #define PACKET_SIZE 1024 // byte
 
+class App;
 class BaseRequest;
 class BaseResponse;
 
-class DataManager;
 
 #define PORT 4578
 
@@ -27,12 +24,13 @@ struct ClientSocketInfo {
 
 class NetworkManager {
 public:
-	NetworkManager() = default;
+	NetworkManager(App* app);
 	virtual ~NetworkManager() = default;
 
 private:
 	static constexpr int SOCK_CONNECTION_MAX = 10000;
 	bool _isQuitRequested = false;
+	App* _owner;
 
 	std::mutex _jobQueueMutex;
 	std::queue < std::pair<int, std::shared_ptr<BaseResponse> > > _jobQueue;
@@ -51,7 +49,7 @@ public:
 	}
 	void quit();
 
-	void listenRequest(DataManager& dataManager);
+	void listenRequest();
 
 	std::shared_ptr<BaseRequest> recieveFromClient(SOCKET& socket);
 	std::shared_ptr<BaseRequest> createRequestFromCommand(short cmd);

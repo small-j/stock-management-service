@@ -1,4 +1,5 @@
 ﻿#pragma once
+
 #include <memory>
 #include <queue>
 #include <mutex>
@@ -7,22 +8,21 @@
 #include "ItemManager.h"
 #include "StockManager.h"
 
-// TODO: 삭제
-#include "NetworkManager.h"
+
+class App;
 
 class BaseRequest;
 class BaseResponse;
 class ItemManager;
 class StockManager;
 
-class NetworkManager;
-
 class DataManager {
 public:
-	DataManager() = default;
+	DataManager(App* app);
 	virtual ~DataManager() = default;
 
 private:
+	App* _owner;
 	bool _isQuitRequested = false;
 	std::mutex _jobQueueMutex;
 	std::queue<std::pair<int, std::shared_ptr<BaseRequest> > > _jobQueue;
@@ -35,8 +35,8 @@ public:
 		return _isQuitRequested;
 	}
 	void quit();
-	StockServer::StatusCode loop(NetworkManager& networkManager); // queue wastching + pop job.
-	StockServer::StatusCode execute(int socketKye, std::shared_ptr<BaseRequest> req, NetworkManager& networkManager);
+	StockServer::StatusCode loop(); // queue wastching + pop job.
+	StockServer::StatusCode execute(int socketKye, std::shared_ptr<BaseRequest> req);
 	StockServer::StatusCode addRequest(int socketKey, std::shared_ptr<BaseRequest> req);
 	StockServer::StatusCode popRequest();
  

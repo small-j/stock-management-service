@@ -5,6 +5,7 @@
 #include <chrono>
 #include <memory>
 
+#include "App.h"
 
 #include "ItemTypeHelper.h"
 #include "ItemManager.h"
@@ -28,18 +29,19 @@
 #include "ReduceStockRequest.h"
 #include "ReduceStockResponse.h"
 
+DataManager::DataManager(App* app) : _owner(app) {}
 
 void DataManager::quit() {
 	_isQuitRequested = true;
 }
 
-StockServer::StatusCode DataManager::loop(NetworkManager& networkManager) {
+StockServer::StatusCode DataManager::loop() {
 	while (isQuitRequested() == false) {
 		if (_jobQueue.empty()) {
 			std::this_thread::sleep_for(std::chrono::milliseconds(500)); // cpu 점유 방지.
 		}
 		else {
-			execute(_jobQueue.front().first, _jobQueue.front().second, networkManager);
+			execute(_jobQueue.front().first, _jobQueue.front().second);
 
 			popRequest();
 		}
@@ -50,8 +52,7 @@ StockServer::StatusCode DataManager::loop(NetworkManager& networkManager) {
 
 StockServer::StatusCode DataManager::execute(
 	int socketKey, 
-	std::shared_ptr<BaseRequest> req, 
-	NetworkManager& networkManager
+	std::shared_ptr<BaseRequest> req
 ) {
 	if (!req) return StockServer::StatusCode::CANCELLED;
 	std::cout << req->getCommand() << "추출 성공!" << std::endl; // TODO : 변경
@@ -62,7 +63,7 @@ StockServer::StatusCode DataManager::execute(
 		return StockServer::StatusCode::CANCELLED;
 		// res가 nullptr일 경우 유저는 결과를 반환받을 수 없다.
 	}
-	networkManager.addResponse(socketKey, res);
+	_owner->addResponse(socketKey, res);
 
 	return StockServer::StatusCode::OK;
 }

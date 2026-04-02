@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "Status.h"
 #include "NetworkManager.h"
 #include "DataManager.h"
@@ -13,7 +13,7 @@ struct ResInfos {
 
 class App {
 public:
-	App() :_appStatus(StockServer::ThreadStatus::INIT) {};
+	App();
 	virtual ~App() = default;
 
 private:

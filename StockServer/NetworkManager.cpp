@@ -6,6 +6,7 @@
 #include <chrono>
 
 #include "NetworkManager.h"
+#include "App.h"
 #include "BaseRequest.h"
 #include "BaseResponse.h"
 #include "RequestCommand.h"
@@ -25,7 +26,7 @@
 #include "GetMenusRequest.h"
 #include "GetMenusResponse.h"
 
-
+NetworkManager::NetworkManager(App* app) : _owner(app) {}
 
 void NetworkManager::quit() {
 	_isQuitRequested = true;
@@ -53,7 +54,7 @@ SOCKET NetworkManager::initSocket(WSADATA& wsa) {
 	return listenSocket;
 }
 
-void NetworkManager::listenRequest(DataManager& dataManager) {
+void NetworkManager::listenRequest() {
 	WSADATA wsa;
 	if (::WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
 		ErrorHandler("원속을 초기화 할 수 없습니다.");
@@ -92,7 +93,7 @@ void NetworkManager::listenRequest(DataManager& dataManager) {
 			break;
 		}
 
-		dataManager.addRequest(socketKey, req);
+		_owner->addRequest(socketKey, req);
 	}
 
 	clearSocket(1); // TODO: 일단 현재는 싱글 클라이언트.
