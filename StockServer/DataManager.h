@@ -5,10 +5,6 @@
 #include <mutex>
 #include <functional>
 
-#include "ItemManager.h"
-#include "StockManager.h"
-
-
 class App;
 
 class BaseRequest;
@@ -27,8 +23,8 @@ private:
 	std::mutex _jobQueueMutex;
 	std::queue<std::pair<int, std::shared_ptr<BaseRequest> > > _jobQueue;
 
-	ItemManager itemManager;
-	StockManager stockManager;
+	std::shared_ptr<ItemManager> _itemManager;
+	std::shared_ptr<StockManager> _stockManager;
 
 public:
 	bool isQuitRequested() {

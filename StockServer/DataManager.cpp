@@ -29,7 +29,10 @@
 #include "ReduceStockRequest.h"
 #include "ReduceStockResponse.h"
 
-DataManager::DataManager(App* app) : _owner(app) {}
+DataManager::DataManager(App* app) : _owner(app) {
+	_itemManager = std::make_shared <ItemManager>();
+	_stockManager = std::make_shared<StockManager>();
+}
 
 void DataManager::quit() {
 	_isQuitRequested = true;
@@ -178,7 +181,7 @@ std::shared_ptr<BaseResponse> DataManager::addItem(
 
 	std::shared_ptr<BaseResponse> res = nullptr;
 
-	if (itemManager.addItem(
+	if (_itemManager->addItem(
 		paredReq.get()->getName(),
 		static_cast<ItemType>(paredReq.get()->getItemType() - 1)
 	) == StockServer::StatusCode::OK
@@ -210,7 +213,7 @@ std::shared_ptr<BaseResponse> DataManager::removeItem(
 	std::shared_ptr<BaseResponse> res = nullptr;
 
 	std::string msg;
-	std::shared_ptr<Stock> stock = stockManager.findStockByItemId(paredReq.get()->getItemId());
+	std::shared_ptr<Stock> stock = _stockManager->findStockByItemId(paredReq.get()->getItemId());
 	if (stock != nullptr)
 	{
 		msg = "해당 아이템은 재고가 남아있어 삭제할 수 없습니다.\n";
@@ -227,7 +230,7 @@ std::shared_ptr<BaseResponse> DataManager::removeItem(
 		// networkManager.sendToClient(socketKey, res);
 	}
 
-	if (itemManager.removeItem(
+	if (_itemManager->removeItem(
 		paredReq.get()->getItemId()
 	) == StockServer::StatusCode::OK)
 	{
@@ -254,7 +257,7 @@ std::shared_ptr<BaseResponse> DataManager::removeItem(
 std::shared_ptr<BaseResponse> DataManager::printItemList(
 	int socketKey
 ) {
-	std::string itemListStr = itemManager.itemListToString();
+	std::string itemListStr = _itemManager->itemListToString();
 	std::string msg = "success";
 
 	std::shared_ptr<BaseResponse> res = std::make_shared<PrintItemResponse>(true, msg, itemListStr);
@@ -278,7 +281,7 @@ std::shared_ptr<BaseResponse> DataManager::addStock(
 
 	std::string msg;
 
-	std::shared_ptr<Item> item = itemManager.findItemById(paredReq.get()->getItemId());
+	std::shared_ptr<Item> item = _itemManager->findItemById(paredReq.get()->getItemId());
 	if (item == nullptr)
 	{
 		msg = "아이템이 존재하지 않습니다\n";
@@ -295,7 +298,7 @@ std::shared_ptr<BaseResponse> DataManager::addStock(
 		//networkManager.sendToClient(socketKey, res);
 	}
 
-	if (stockManager.addStock(
+	if (_stockManager->addStock(
 		paredReq.get()->getItemId(),
 		paredReq.get()->getCount()
 	) == StockServer::StatusCode::OK)
@@ -329,7 +332,7 @@ std::shared_ptr<BaseResponse> DataManager::reduceStock(
 
 	std::string msg;
 
-	if (stockManager.reduceStock(
+	if (_stockManager->reduceStock(
 		paredReq.get()->getItemId(),
 		paredReq.get()->getCount()
 	) == StockServer::StatusCode::OK)

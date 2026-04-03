@@ -1,15 +1,10 @@
 ﻿#pragma once
 #include "Status.h"
-#include "NetworkManager.h"
-#include "DataManager.h"
 
 class NetworkManager;
 class DataManager;
-
-struct ResInfos {
-	int socketKey;
-
-};
+class BaseRequest;
+class BaseResponse;
 
 class App {
 public:
@@ -22,8 +17,8 @@ private:
 	void setStatus(StockServer::ThreadStatus status) { _appStatus = status; };
 
 protected:
-	NetworkManager networkManager;
-	DataManager dataManager;
+	std::shared_ptr<NetworkManager> _networkManager;
+	std::shared_ptr<DataManager> _dataManager;
 
 public:
 	void run();
