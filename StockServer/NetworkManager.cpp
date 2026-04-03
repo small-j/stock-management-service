@@ -10,21 +10,7 @@
 #include "BaseRequest.h"
 #include "BaseResponse.h"
 #include "RequestCommand.h"
-
-#include "AddItemRequest.h"
-#include "AddItemResponse.h"
-#include "RemoveItemRequest.h"
-#include "RemoveItemResponse.h"
-#include "PrintItemRequest.h"
-#include "PrintItemResponse.h"
-#include "GetItemTypesRequest.h"
-#include "GetItemTypesResponse.h"
-#include "AddStockRequest.h"
-#include "AddStockResponse.h"
-#include "ReduceStockRequest.h"
-#include "ReduceStockResponse.h"
-#include "GetMenusRequest.h"
-#include "GetMenusResponse.h"
+#include "RequestFactory.h"
 
 NetworkManager::NetworkManager(App* app) : _owner(app) {}
 
@@ -161,7 +147,7 @@ std::shared_ptr<BaseRequest> NetworkManager::recieveFromClient(SOCKET& socket) {
 	BaseRequest baseReq(Request::Command::UNKNOWN);
 	baseReq.deserialize(recvBuffer);
 
-	std::shared_ptr<BaseRequest> req = createRequestFromCommand(baseReq.getCommand());
+	std::shared_ptr<BaseRequest> req = RequestFactory::createRequestFromCommand(baseReq.getCommand());
 	if (!req) {
 		// TODO: log
 		return nullptr;
@@ -172,28 +158,6 @@ std::shared_ptr<BaseRequest> NetworkManager::recieveFromClient(SOCKET& socket) {
 	}
 
 	return req;
-}
-
-std::shared_ptr<BaseRequest> NetworkManager::createRequestFromCommand(short cmd) {
-	switch (cmd) {
-	case Request::Command::ADD_ITEM:
-		return std::make_shared<AddItemRequest>();
-	case Request::Command::REMOVE_ITEM :
-		return std::make_shared<RemoveItemRequest>();
-	case Request::Command::GET_ITEM_TYPE:
-		return std::make_shared<GetItemTypesRequest>();
-	case Request::Command::PRINT_ITEM:
-		return std::make_shared<PrintItemRequest>();
-	case Request::Command::ADD_STOCK:
-		return std::make_shared<AddStockRequest>();
-	case Request::Command::REDUCE_STOCK:
-		return std::make_shared<ReduceStockRequest>();
-	case Request::Command::GET_MENU:
-		return std::make_shared<GetMenusRequest>();
-	default:
-		assert(false);
-		return nullptr;
-	}
 }
 
 StockServer::StatusCode NetworkManager::loop() {

@@ -52,7 +52,6 @@ public:
 	void listenRequest();
 
 	std::shared_ptr<BaseRequest> recieveFromClient(SOCKET& socket);
-	std::shared_ptr<BaseRequest> createRequestFromCommand(short cmd);
 
 	StockServer::StatusCode loop(); // queue watching + pop job
 	StockServer::StatusCode addResponse(int socketKey, std::shared_ptr<BaseResponse> req);

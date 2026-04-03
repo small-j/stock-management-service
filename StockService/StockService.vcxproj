@@ -157,6 +157,7 @@
     <ClInclude Include="RemoveItemRequest.h" />
     <ClInclude Include="RemoveItemResponse.h" />
     <ClInclude Include="RequestCommand.h" />
+    <ClInclude Include="RequestFactory.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AddItemRequest.cpp" />
@@ -174,6 +175,7 @@
     <ClCompile Include="PrintItemResponse.cpp" />
     <ClCompile Include="ReduceStockRequest.cpp" />
     <ClCompile Include="RemoveItemRequest.cpp" />
+    <ClCompile Include="RequestFactory.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
