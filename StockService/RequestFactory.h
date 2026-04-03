@@ -1,5 +1,5 @@
 #pragma once
-#include <memory>
+#include "common.h"
 
 class BaseRequest;
 

@@ -1,6 +1,5 @@
 ﻿#pragma once
-#include <iostream>
-#include "RequestCommand.h"
+#include "common.h"
 
 #define RES_COMMAND_SIZE 2
 #define RES_STATUS_SIZE 2 // 0: fail 1: success

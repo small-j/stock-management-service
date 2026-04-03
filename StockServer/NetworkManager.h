@@ -3,19 +3,11 @@
 #include <WS2tcpip.h>
 #pragma comment(lib, "ws2_32.lib")
 
-#include <mutex>
-#include <queue>
-#include <map>
-#include <functional>
-
-#define PACKET_SIZE 1024 // byte
+#include "common.h"
 
 class App;
 class BaseRequest;
 class BaseResponse;
-
-
-#define PORT 4578
 
 struct ClientSocketInfo {
 	SOCKET clientSocket;
@@ -31,6 +23,9 @@ private:
 	static constexpr int SOCK_CONNECTION_MAX = 10000;
 	bool _isQuitRequested = false;
 	App* _owner;
+
+	static constexpr unsigned int PACKET_SIZE = 1024;
+	static constexpr unsigned int PORT = 4578;
 
 	std::mutex _jobQueueMutex;
 	std::queue < std::pair<int, std::shared_ptr<BaseResponse> > > _jobQueue;

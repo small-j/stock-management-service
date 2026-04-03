@@ -25,9 +25,6 @@
     <Filter Include="manager">
       <UniqueIdentifier>{9c8fdf0e-abb5-4cb8-81bb-c851a2989273}</UniqueIdentifier>
     </Filter>
-    <Filter Include="container">
-      <UniqueIdentifier>{5cd2f6bd-9764-453b-be81-de148acd5392}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="StockServer.cpp">
@@ -90,6 +87,9 @@
       <Filter>common</Filter>
     </ClInclude>
     <ClInclude Include="App.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="common.h">
       <Filter>common</Filter>
     </ClInclude>
   </ItemGroup>

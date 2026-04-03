@@ -1,5 +1,6 @@
 ﻿#pragma once
-#include <map>
+
+#include "common.h"
 
 class Stock;
 // 포인터로 썼을 떄만 전방선언 가능. 참조형으로 받으면 include 해야함.

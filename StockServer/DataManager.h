@@ -1,9 +1,6 @@
 ﻿#pragma once
 
-#include <memory>
-#include <queue>
-#include <mutex>
-#include <functional>
+#include "common.h"
 
 class App;
 

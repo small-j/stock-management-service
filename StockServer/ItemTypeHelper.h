@@ -1,6 +1,6 @@
 ﻿#pragma once
-#include <array>
-#include <vector>
+
+#include "common.h"
 
 enum ItemType;
 
