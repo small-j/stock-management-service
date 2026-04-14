@@ -35,17 +35,21 @@ DataManager::DataManager(App* app) : _owner(app) {
 }
 
 void DataManager::quit() {
+	LoggerService::debug("quit dataManager.");
 	_isQuitRequested = true;
 }
 
 StockServer::StatusCode DataManager::loop() {
 	while (isQuitRequested() == false) {
 		if (_jobQueue.empty()) {
+			LoggerService::debug("data manager queue가 비어있습니다.");
 			std::this_thread::sleep_for(std::chrono::milliseconds(500)); // cpu 점유 방지.
 		}
 		else {
+			LoggerService::debug("request를 처리합니다. -> client : " + _jobQueue.front().first);
 			execute(_jobQueue.front().first, _jobQueue.front().second);
 
+			LoggerService::debug("request 처리가 완료되었습니다. -> client : " + _jobQueue.front().first);
 			popRequest();
 		}
 	}
@@ -58,11 +62,11 @@ StockServer::StatusCode DataManager::execute(
 	std::shared_ptr<BaseRequest> req
 ) {
 	if (!req) return StockServer::StatusCode::CANCELLED;
-	std::cout << req->getCommand() << "추출 성공!" << std::endl; // TODO : 변경
 
 	std::shared_ptr<BaseResponse> res = callApi(socketKey, req);
 
 	if (res == nullptr) {
+		LoggerService::error("데이터 처리 중 알 수 없는 문제가 발생했습니다. -> client : " + socketKey);
 		return StockServer::StatusCode::CANCELLED;
 		// res가 nullptr일 경우 유저는 결과를 반환받을 수 없다.
 	}
@@ -72,7 +76,10 @@ StockServer::StatusCode DataManager::execute(
 }
 
 StockServer::StatusCode DataManager::addRequest(int socketKey, std::shared_ptr<BaseRequest> req) {
-	if (!req) return StockServer::StatusCode::CANCELLED;
+	if (!req) {
+		LoggerService::error("request를 추가할 수 없습니다. : " + socketKey);
+		return StockServer::StatusCode::CANCELLED;
+	}
 
 	std::lock_guard<std::mutex> lock(_jobQueueMutex);
 	_jobQueue.push({ socketKey, req });
@@ -135,21 +142,19 @@ std::shared_ptr<BaseResponse> DataManager::menus(
 
 	std::string msg = "success";
 	std::shared_ptr<BaseResponse> res = std::make_shared<GetMenusResponse>(true, msg, datas);
-	
-	//TODO: res = nullptr;
+
 	if (res == nullptr) {
-		return std::make_shared<GetMenusResponse>(); // 강제로 이 로직을 타도록 테스트하기.
+		LoggerService::error("get menu 처리 중 알 수 없는 문제가 발생했습니다. : " + socketKey);
+		return std::make_shared<GetMenusResponse>(); // TODO: 강제로 이 로직을 타도록 테스트하기.
 	}
 
 	return res;
-
-	// TODO: 
-	// networkManager.sendToClient(socketKey, res);
 }
 
 std::shared_ptr<BaseResponse> DataManager::printItemType(int socketKey)
 {
 	std::vector<std::string> itemTypeStr = ItemTypeHelper::getAllItemInfosToString();
+
 	std::string msg = "success";
 
 	std::string datas;
@@ -163,13 +168,11 @@ std::shared_ptr<BaseResponse> DataManager::printItemType(int socketKey)
 	std::shared_ptr<BaseResponse> res = std::make_shared<GetItemTypesResponse>(true, msg, datas);
 	
 	if (res == nullptr) {
+		LoggerService::error("print item types 처리 중 알 수 없는 문제가 발생했습니다. : " + socketKey);
 		return std::make_shared<GetItemTypesResponse>();
 	}
 
 	return res;
-
-	// TODO
-	// networkManager.sendToClient(socketKey, res);
 }
 
 std::shared_ptr<BaseResponse> DataManager::addItem(
@@ -196,13 +199,11 @@ std::shared_ptr<BaseResponse> DataManager::addItem(
 
 	if (res == nullptr) {
 		std::string msg = "알 수 없는 에러가 발생했습니다.";
+		LoggerService::error("add item 처리 중 알 수 없는 문제가 발생했습니다. : " + socketKey);
 		return std::make_shared<AddItemResponse>(false, msg);
 	}
 
 	return res;
-	
-	// TODO: 
-	//networkManager.sendToClient(socketKey, res);
 }
 
 std::shared_ptr<BaseResponse> DataManager::removeItem(
@@ -225,9 +226,6 @@ std::shared_ptr<BaseResponse> DataManager::removeItem(
 		}
 		
 		return res;
-
-		// TODO
-		// networkManager.sendToClient(socketKey, res);
 	}
 
 	if (_itemManager->removeItem(
@@ -244,14 +242,12 @@ std::shared_ptr<BaseResponse> DataManager::removeItem(
 	}
 
 	if (res == nullptr) {
+		LoggerService::error("remove item 처리 중 알 수 없는 문제가 발생했습니다. : " + socketKey);
 		msg = "알 수 없는 에러가 발생했습니다.";
 		return std::make_shared<RemoveItemResponse>(false, msg);
 	}
 
 	return res;
-	
-	// TODO
-	// networkManager.sendToClient(socketKey, res);
 }
 
 std::shared_ptr<BaseResponse> DataManager::printItemList(
@@ -263,13 +259,11 @@ std::shared_ptr<BaseResponse> DataManager::printItemList(
 	std::shared_ptr<BaseResponse> res = std::make_shared<PrintItemResponse>(true, msg, itemListStr);
 	
 	if (res == nullptr) {
+		LoggerService::error("print item list 처리 중 알 수 없는 문제가 발생했습니다. : " + socketKey);
 		return std::make_shared<PrintItemResponse>();
 	}
 
 	return res;
-
-	// res를 App으로 보내는 형태로 처리하자.
-	// networkManager.sendToClient(socketKey, res);
 }
 
 std::shared_ptr<BaseResponse> DataManager::addStock(
@@ -288,14 +282,12 @@ std::shared_ptr<BaseResponse> DataManager::addStock(
 		res = std::make_shared<AddStockResponse>(false, msg);
 
 		if (res == nullptr) {
+			LoggerService::error("add stock 처리 중 알 수 없는 문제가 발생했습니다. : " + socketKey);
 			msg = "알 수 없는 에러가 발생했습니다.";
 			return std::make_shared<AddStockResponse>(false, msg);
 		}
 
 		return res;
-
-		// TODO
-		//networkManager.sendToClient(socketKey, res);
 	}
 
 	if (_stockManager->addStock(
@@ -313,14 +305,12 @@ std::shared_ptr<BaseResponse> DataManager::addStock(
 	}
 
 	if (res == nullptr) {
+		LoggerService::error("add stock 처리 중 알 수 없는 문제가 발생했습니다. : " + socketKey);
 		msg = "알 수 없는 에러가 발생했습니다.";
 		return std::make_shared<AddStockResponse>(false, msg);
 	}
 	
 	return res;
-	
-	// TODO
-	//networkManager.sendToClient(socketKey, res);
 }
 
 std::shared_ptr<BaseResponse> DataManager::reduceStock(
@@ -347,28 +337,10 @@ std::shared_ptr<BaseResponse> DataManager::reduceStock(
 	}
 
 	if (res == nullptr) {
+		LoggerService::error("reduce stock 처리 중 알 수 없는 문제가 발생했습니다. : " + socketKey);
 		msg = "알 수 없는 에러가 발생했습니다.";
 		return std::make_shared<ReduceStockResponse>(false, msg);
 	}
 
 	return res;
-	
-	// TODO
-	//networkManager.sendToClient(socketKey, res);
 }
-
-// TODO
-//void getStockList()
-//{
-//	if (shared_ptr<Stock> stock = stockManager.findStockByItemId(itemId)) {
-//		std::string data = std::to_string(stock->getItemId())
-//			+ "재고 수 : "
-//			+ std::to_string(stock->getCount())
-//			+ "\n";
-//		printFromSocket(socketKey, 1, msg, data);
-//	}
-//	else {
-//		msg += "재고 조회에 실패했습니다. 다시 시도해주세요.\n";
-//		printFromSocket(socketKey, 0, msg);
-//	}
-//}

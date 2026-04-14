@@ -15,6 +15,7 @@
 NetworkManager::NetworkManager(App* app) : _owner(app) {}
 
 void NetworkManager::quit() {
+	LoggerService::debug("quit networkManager.");
 	_isQuitRequested = true;
 }
 
@@ -33,7 +34,7 @@ SOCKET NetworkManager::initSocket(WSADATA& wsa) {
 
 	if (::listen(listenSocket, SOMAXCONN) == SOCKET_ERROR)
 	{
-		puts("ERROR: 리슨 상태로 전환할 수 없습니다.");
+		ErrorHandler("리슨 상태로 전환할 수 없습니다.");
 		return 0;
 	}
 
@@ -57,23 +58,23 @@ void NetworkManager::listenRequest() {
 	if (clientSocket == INVALID_SOCKET) {
 		ErrorHandler("클라이언트 소켓 연결에 실패했습니다.");
 	}
-	std::cout << "클라이언트가 연결되었습니다.\n";
+	LoggerService::debug("클라이언트가 연결되었습니다.");
 	
 	int socketKey = addClientConnection(clientSocket, acceptSocketAddr);
 	if (socketKey == -1) {
-		std::cout << "test" << std::endl;
+		LoggerService::debug("socket key 발급에 실패했습니다.");
 		// TODO: 유저에게 실패 response 반환.
 		// sendToClient를 오버로드로 2개 만들어서 각각 socket일 때 socket을 찾아서 유저에게 response 할 때의 처리를 구분해줘야겠다.
 		// 소켓 key를 발급받지 못한 경우 유저 요청을 처리하지 못한 거니까.
 		// 일정 타임아웃 시간 끝나면 무조건 실패 response 보내는걸로 처리?
 	}
 
-	// 연결 수신 대기
+	// 연결 수신 대기.
 	while (isQuitRequested() == false) {
 		std::shared_ptr<BaseRequest> req = recieveFromClient(clientSocket);
 
 		if (req == nullptr) {
-			// log 처리
+			LoggerService::debug("request 파싱에 실패했습니다.");
 			// TODO: 유저에게 실패 response 반환. -> 요청 형식이 잘못되었습니다.
 			clearSocket(socketKey);
 			break;
@@ -82,7 +83,7 @@ void NetworkManager::listenRequest() {
 		_owner->addRequest(socketKey, req);
 	}
 
-	clearSocket(1); // TODO: 일단 현재는 싱글 클라이언트.
+	clearSocket(1); // TODO: 멀티 클라이언트로.
 	closesocket(listenSocket);
 	WSACleanup();
 }
@@ -90,7 +91,7 @@ void NetworkManager::listenRequest() {
 void NetworkManager::clearSocket(int key) {
 	auto clientSockItr = _clientSocks.find(key);
 	if (clientSockItr == _clientSocks.end()) {
-		std::cout << "존재하지 않는 소켓입니다." << std::endl;
+		LoggerService::error("존재하지 않는 소켓입니다.");
 		return; 
 		// clearSocket 이 실행된 후에 key는 무조건 사용할 수 없는 상태. 
 		// 즉, socket이 삭제된 상태가 되니까 결과를 status로 반환할 필요는 없다.
@@ -102,10 +103,10 @@ void NetworkManager::clearSocket(int key) {
 }
 
 void NetworkManager::ErrorHandler(const std::string& errMsg) {
-	std::cout << errMsg << std::endl;
-	::WSACleanup();
-	// TODO: 전체 client 소켓 닫아주기
-	quit();
+	LoggerService::error(errMsg);
+	//::WSACleanup();
+	// TODO: 전체 client 소켓 닫아주기.
+	// quit(); // quit을 여기서 해줘도 될까?.
 }
 
 int NetworkManager::publishSocketHandleKey() {
@@ -122,6 +123,7 @@ int NetworkManager::addClientConnection(SOCKET& clientSocket, SOCKADDR_IN& sockA
 	// TODO: 여기 부분 mutex로 묶어야겠다.
 	if (_clientSocks.size() < NetworkManager::SOCK_CONNECTION_MAX) {
 		int sockKey = publishSocketHandleKey();
+
 		if (sockKey != -1) {
 			_clientSocks[sockKey] = { clientSocket, sockAddr };
 			return sockKey;
@@ -141,6 +143,7 @@ std::shared_ptr<BaseRequest> NetworkManager::recieveFromClient(SOCKET& socket) {
 	INT32 result = recv(socket, recvBuffer, PACKET_SIZE, 0);
 
 	if (result == -1 || result == 0) {
+		LoggerService::debug("client로부터의 요청 수신에 실패했습니다.");
 		return nullptr;
 	}
 
@@ -149,11 +152,12 @@ std::shared_ptr<BaseRequest> NetworkManager::recieveFromClient(SOCKET& socket) {
 
 	std::shared_ptr<BaseRequest> req = RequestFactory::createRequestFromCommand(baseReq.getCommand());
 	if (!req) {
-		// TODO: log
+		LoggerService::error("지원하지 않는 request 형태입니다.");
 		return nullptr;
 	}
 
 	if (req->deserialize(recvBuffer) == 0) {
+		LoggerService::debug("파싱할 request 데이터가 없습니다.");
 		return nullptr;
 	}
 
@@ -163,12 +167,14 @@ std::shared_ptr<BaseRequest> NetworkManager::recieveFromClient(SOCKET& socket) {
 StockServer::StatusCode NetworkManager::loop() {
 	while (isQuitRequested() == false) {
 		if (_jobQueue.empty()) {
+			LoggerService::debug("network manager queue가 비어있습니다.");
 			std::this_thread::sleep_for(std::chrono::milliseconds(500)); // cpu 점유 방지.
 		}
 		else {
-			// execute(_jobQueue.front());
+			LoggerService::debug("response를 처리합니다. -> client : " + _jobQueue.front().first);
 			sendToClient(_jobQueue.front().first, _jobQueue.front().second);
 
+			LoggerService::debug("response 처리가 완료되었습니다. -> client : " + _jobQueue.front().first);
 			popResponse();
 		}
 	}
@@ -178,6 +184,7 @@ StockServer::StatusCode NetworkManager::loop() {
 	return StockServer::StatusCode::OK;
 }
 
+// TODO: mutex 다른 방식으로 고치기.
 StockServer::StatusCode NetworkManager::addResponse(int socketKey, std::shared_ptr<BaseResponse> res) {
 	if (!res) return StockServer::StatusCode::CANCELLED;
 
@@ -205,8 +212,8 @@ void NetworkManager::sendToClient(int socketKey, std::shared_ptr<BaseResponse> r
 
 	auto clientSockItr = _clientSocks.find(socketKey);
 	if (clientSockItr == _clientSocks.end()) {
-		std::cout << "존재하지 않는 소켓입니다." << std::endl;
-		std::cout << "소켓이 존재하지 않아서 클라이언트에 요청을 반환할 수 없습니다.";
+		LoggerService::error("존재하지 않는 소켓입니다");
+		LoggerService::debug("소켓이 존재하지 않아서 클라이언트에 요청을 반환할 수 없습니다.");
 		return;
 	}
 

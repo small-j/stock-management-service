@@ -13,6 +13,6 @@
 
 #include "ItemType.h"
 #include "Status.h"
-
+#include "LoggerService.h"
 
 #endif //PCH_H

@@ -78,6 +78,9 @@
     <ClInclude Include="common.h">
       <Filter>common</Filter>
     </ClInclude>
+    <ClInclude Include="LoggerService.h">
+      <Filter>common</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -111,6 +114,9 @@
       <Filter>common</Filter>
     </ClCompile>
     <ClCompile Include="RequestFactory.cpp">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="LoggerService.cpp">
       <Filter>common</Filter>
     </ClCompile>
   </ItemGroup>

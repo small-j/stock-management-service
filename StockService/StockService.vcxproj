@@ -150,6 +150,7 @@
     <ClInclude Include="GetItemTypesResponse.h" />
     <ClInclude Include="GetMenusRequest.h" />
     <ClInclude Include="GetMenusResponse.h" />
+    <ClInclude Include="LoggerService.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="PrintItemRequest.h" />
     <ClInclude Include="PrintItemResponse.h" />
@@ -167,6 +168,7 @@
     <ClCompile Include="BaseResponse.cpp" />
     <ClCompile Include="GetItemTypesResponse.cpp" />
     <ClCompile Include="GetMenusResponse.cpp" />
+    <ClCompile Include="LoggerService.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
