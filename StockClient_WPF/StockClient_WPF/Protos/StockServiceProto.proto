@@ -1,0 +1,110 @@
+syntax = "proto3";
+option csharp_namespace = "StockServiceProtocol";
+
+enum PacketType {
+	UNKNOWN = 0;
+	ADD_ITEM = 1001;
+	REMOVE_ITEM = 1002;
+	PRINT_ITEM = 1003;
+	GET_ITEM_TYPE = 1004;
+	ADD_STOCK = 2001;
+	REDUCE_STOCK = 2002;
+	GET_MENU = 3001;
+}
+
+// itemType은 클라이언트, 서버 공유 안하는게 맞을까?.
+
+// message
+message GetMenusRequest {
+}
+
+message GetMenusResponse {
+	bool status = 1;
+	string message = 2;
+	repeated string menus = 3;
+}
+
+message ItemDto {
+	string name = 1;
+	int32 itemType = 2;
+}
+
+message AddItemRequest {
+	ItemDto itemDto = 1;
+}
+
+message AddItemResponse {
+	bool status = 1;
+	string message = 2;
+}
+
+message RemoveItemRequest {
+	int32 itemId = 1;
+}
+
+message RemoveItemResponse {
+	bool status = 1;
+	string message = 2;
+}
+
+message GetItemsRequest {
+}
+
+message GetItemsResponse {
+	bool status = 1;
+	string message = 2;
+	repeated ItemDto itemDto = 3;
+}
+
+message StockDto {
+	int32 itemId = 1;
+	uint32 count = 2;
+}
+
+message AddStockRequest {
+	StockDto stockDto = 1;
+}
+
+message AddStockResponse {
+	bool status = 1;
+	string message = 2;
+}
+
+message ReduceStockRequest {
+	StockDto stockDto = 1;
+}
+
+message ReduceStockResponse {
+	bool status = 1;
+	string message = 2;
+}
+
+message GetItemTypesRequest {
+}
+
+message GetItemTypesResponse {
+	bool status = 1;
+	string message = 2;
+	repeated string itemTypes = 3;
+}
+
+message Packet {
+	PacketType type = 1;
+
+	oneof payload {
+		AddItemRequest add_item_req = 2;
+		AddItemResponse add_item_res = 3;
+		RemoveItemRequest remove_item_req = 4;
+		RemoveItemResponse remove_item_res = 5;
+		GetItemsRequest get_items_req = 6;
+		GetItemsResponse get_items_res = 7;
+		AddStockRequest add_stock_req = 8;
+		AddStockResponse add_stock_res = 9;
+		ReduceStockRequest reduce_stock_req = 10;
+		ReduceStockResponse reduce_stock_res = 11;
+		GetItemTypesRequest get_item_types_req = 12;
+		GetItemTypesResponse get_item_types_res = 13;
+		GetMenusRequest get_menus_req = 14;
+		GetMenusResponse get_menus_res = 15;
+	}
+}
