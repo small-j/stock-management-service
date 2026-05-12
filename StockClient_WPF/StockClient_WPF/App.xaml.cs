@@ -36,7 +36,7 @@ namespace StockClient_WPF
                 services.AddSingleton<MainWindowViewModel>();
                 services.AddSingleton<Main>();
                 services.AddSingleton<MainViewModel>();
-                services.AddSingleton<IServerConnection<Packet, Packet>, SocketConnectionService>();
+                services.AddSingleton<IServerConnection<Packet, Packet>, TestConnectionService>();
                 //services.AddSingleton<ItemForm>();
                 //services.AddSingleton<StockForm>();
             }).Build();
