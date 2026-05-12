@@ -1,4 +1,8 @@
-﻿using System;
+﻿using Google.Protobuf;
+using StockClient_WPF.Interfaces;
+using StockClient_WPF.ViewModels.Windows;
+using StockServiceProtocol;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Windows;
@@ -17,9 +21,14 @@ namespace StockClient_WPF.Views.Windows
     /// </summary>
     public partial class MainWindow : Window
     {
-        public MainWindow()
+        public MainWindowViewModel ViewModel { get; }
+
+        public MainWindow(MainWindowViewModel viewModel)
         {
+            ViewModel = viewModel;
+
             InitializeComponent();
+
         }
     }
 }
