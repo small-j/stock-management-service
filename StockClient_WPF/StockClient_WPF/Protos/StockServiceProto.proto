@@ -67,6 +67,12 @@ message StockDto {
 	uint32 count = 2;
 }
 
+message StockDto {
+	int32 id = 1;
+	int32 itemId = 2;
+	uint32 count = 3;
+}
+
 message AddStockRequest {
 	StockDto stockDto = 1;
 }

@@ -4,11 +4,28 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:local="clr-namespace:StockClient_WPF.Views.Pages"
+      xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
       mc:Ignorable="d" 
       d:DesignHeight="450" d:DesignWidth="800"
       Title="Main">
 
     <Grid>
-        <TextBlock Text="Main Page"/>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <StackPanel Grid.Column="0" Margin="10,10,10,10" >
+            <ui:Button Margin="0,0,0,10" Grid.Row="14" Height="35" Width="100" Background="CadetBlue" Foreground="white" Content="Add Item" Command="{Binding ViewModel.AddItemCommand}"/>
+            <Grid x:Name="itemDgGrid" Grid.Column="1" Visibility="Collapsed">
+                <DataGrid ItemsSource="{Binding ViewModel.Items, Mode=OneWay}" />
+            </Grid>
+        </StackPanel>
+        <StackPanel Grid.Column="1"  Margin="10,10,10,10" >
+            <ui:Button Margin="0,0,0,10" Grid.Row="14" Height="35" Width="100" Background="CadetBlue" Foreground="white" Content="Add stock" Command="{Binding ViewModel.AddStockCommand}"/>
+            <Grid x:Name="stockDgGrid" Grid.Column="1" Visibility="Collapsed">
+                <DataGrid ItemsSource="{Binding ViewModel.Stocks, Mode=OneWay}" />
+            </Grid>
+        </StackPanel>
     </Grid>
 </Page>
