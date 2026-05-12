@@ -29,6 +29,12 @@ message ItemDto {
 	int32 itemType = 2;
 }
 
+message ResItemDto {
+	int32 id = 1;
+	string name = 2;
+	int32 itemType = 3;
+}
+
 message AddItemRequest {
 	ItemDto itemDto = 1;
 }
@@ -53,7 +59,7 @@ message GetItemsRequest {
 message GetItemsResponse {
 	bool status = 1;
 	string message = 2;
-	repeated ItemDto itemDto = 3;
+	repeated ResItemDto resItemDto = 3;
 }
 
 message StockDto {
