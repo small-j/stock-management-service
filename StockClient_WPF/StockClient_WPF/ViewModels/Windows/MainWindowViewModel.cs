@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using Google.Protobuf;
 using StockClient_WPF.Interfaces;
+using StockClient_WPF.ViewModels.Pages;
 using StockServiceProtocol;
 using System;
 using System.Collections.Generic;

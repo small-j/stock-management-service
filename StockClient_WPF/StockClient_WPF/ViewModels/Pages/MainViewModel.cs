@@ -4,7 +4,7 @@ using System.Text;
 
 namespace StockClient_WPF.ViewModels.Pages
 {
-    internal class MainViewModel
+    public class MainViewModel
     {
     }
 }

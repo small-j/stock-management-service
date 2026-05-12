@@ -1,4 +1,6 @@
-﻿using System;
+﻿using StockClient_WPF.ViewModels.Pages;
+using StockClient_WPF.ViewModels.Windows;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Windows;
@@ -18,9 +20,14 @@ namespace StockClient_WPF.Views.Pages
     /// </summary>
     public partial class Main : Page
     {
-        public Main()
+        public MainViewModel ViewModel { get; }
+
+        public Main(MainViewModel viewModel)
         {
+            this.ViewModel = viewModel;
+
             InitializeComponent();
         }
+
     }
 }

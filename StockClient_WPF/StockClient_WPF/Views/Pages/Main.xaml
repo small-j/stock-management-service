@@ -9,6 +9,6 @@
       Title="Main">
 
     <Grid>
-        
+        <TextBlock Text="Main Page"/>
     </Grid>
 </Page>

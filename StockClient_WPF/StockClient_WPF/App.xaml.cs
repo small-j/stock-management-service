@@ -32,11 +32,11 @@ namespace StockClient_WPF
             .ConfigureAppConfiguration(c => { c.SetBasePath(Path.GetDirectoryName(AppContext.BaseDirectory)); })
             .ConfigureServices((context, services) =>
             {
+                services.AddSingleton<IServerConnection<Packet, Packet>, TestConnectionService>();
                 services.AddSingleton<MainWindow>();
                 services.AddSingleton<MainWindowViewModel>();
                 services.AddSingleton<Main>();
                 services.AddSingleton<MainViewModel>();
-                services.AddSingleton<IServerConnection<Packet, Packet>, TestConnectionService>();
                 //services.AddSingleton<ItemForm>();
                 //services.AddSingleton<StockForm>();
             }).Build();
@@ -62,7 +62,6 @@ namespace StockClient_WPF
 
             var mainWindow = _host.Services.GetRequiredService<MainWindow>();
             mainWindow.Show();
-
         }
 
         /// <summary>

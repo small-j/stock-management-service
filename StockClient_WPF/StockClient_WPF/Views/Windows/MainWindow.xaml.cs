@@ -1,6 +1,8 @@
 ﻿using Google.Protobuf;
+using Microsoft.Extensions.DependencyInjection;
 using StockClient_WPF.Interfaces;
 using StockClient_WPF.ViewModels.Windows;
+using StockClient_WPF.Views.Pages;
 using StockServiceProtocol;
 using System;
 using System.Collections.Generic;
@@ -29,6 +31,8 @@ namespace StockClient_WPF.Views.Windows
 
             InitializeComponent();
 
+            var mainPage = App.Services.GetRequiredService<Main>();
+            MainFrame.Navigate(mainPage);
         }
     }
 }
