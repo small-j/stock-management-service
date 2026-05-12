@@ -9,7 +9,7 @@ using System.Text;
 
 namespace StockClient_WPF.Services
 {
-    internal class SocketConnectionService : IServerConnection<IMessage, Packet>
+    internal class SocketConnectionService : IServerConnection<Packet, Packet>
     {
         private TcpClient? _client;
         private NetworkStream? _stream;
@@ -63,7 +63,7 @@ namespace StockClient_WPF.Services
             }
         }
 
-        public void Send(IMessage obj)
+        public void Send(Packet obj)
         {
             if (_stream == null)
             {

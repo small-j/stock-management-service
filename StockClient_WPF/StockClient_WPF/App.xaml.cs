@@ -36,7 +36,7 @@ namespace StockClient_WPF
                 services.AddSingleton<MainWindowViewModel>();
                 services.AddSingleton<Main>();
                 services.AddSingleton<MainViewModel>();
-                services.AddSingleton<IServerConnection<IMessage, Packet>, SocketConnectionService>();
+                services.AddSingleton<IServerConnection<Packet, Packet>, SocketConnectionService>();
                 //services.AddSingleton<ItemForm>();
                 //services.AddSingleton<StockForm>();
             }).Build();
@@ -56,7 +56,7 @@ namespace StockClient_WPF
         {
             await _host.StartAsync();
 
-            var serverConnection = _host.Services.GetRequiredService<IServerConnection<IMessage, Packet>>();
+            var serverConnection = _host.Services.GetRequiredService<IServerConnection<Packet, Packet>>();
             serverConnection.Init();
             serverConnection.CreateConnection();
 
@@ -70,7 +70,7 @@ namespace StockClient_WPF
         /// </summary>
         private async void OnExit(object sender, ExitEventArgs e)
         {
-            var serverConnection = _host.Services.GetRequiredService<IServerConnection<IMessage, Packet>>();
+            var serverConnection = _host.Services.GetRequiredService<IServerConnection<Packet, Packet>>();
             serverConnection.DestroyConnection();
 
             await _host.StopAsync();
