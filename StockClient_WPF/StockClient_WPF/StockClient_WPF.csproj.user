@@ -2,16 +2,16 @@
 <Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup />
   <ItemGroup>
-    <Compile Update="Views\Pages\ItemForm.xaml.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Update="Views\Pages\StockForm.xaml.cs">
+    <Compile Update="Views\Windows\ItemForm.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Update="Views\Pages\Main.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Update="Views\Windows\MainWindow.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Views\Windows\StockForm.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
   </ItemGroup>

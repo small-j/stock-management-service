@@ -4,10 +4,11 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using StockClient_WPF.Interfaces;
 using StockClient_WPF.Services;
-using StockClient_WPF.Views.Pages;
+using StockClient_WPF.ViewModels;
 using StockClient_WPF.ViewModels.Pages;
-using StockClient_WPF.Views.Windows;
 using StockClient_WPF.ViewModels.Windows;
+using StockClient_WPF.Views.Pages;
+using StockClient_WPF.Views.Windows;
 using StockServiceProtocol;
 using System.IO;
 using System.Reflection;
@@ -37,8 +38,10 @@ namespace StockClient_WPF
                 services.AddSingleton<MainWindowViewModel>();
                 services.AddSingleton<Main>();
                 services.AddSingleton<MainViewModel>();
-                //services.AddSingleton<ItemForm>();
-                //services.AddSingleton<StockForm>();
+                services.AddSingleton<ItemForm>();
+                services.AddSingleton<StockForm>();
+                services.AddSingleton<ItemFormViewModel>();
+                services.AddSingleton<StockFormViewModel>();
             }).Build();
 
         /// <summary>

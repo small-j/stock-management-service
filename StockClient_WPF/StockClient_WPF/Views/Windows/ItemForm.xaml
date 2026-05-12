@@ -1,0 +1,26 @@
+﻿<Window x:Class="StockClient_WPF.Views.Windows.ItemForm"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:StockClient_WPF.Views.Windows"
+        xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+        mc:Ignorable="d"
+        Title="ItemForm" Height="450" Width="300">
+    <Grid>
+        <StackPanel>
+            <ui:TextBlock Grid.Row="0" Margin="0, 0, 0, 10">
+                <Run Text="Item Type" />
+                <Run Text="*" Foreground="OrangeRed"/>
+            </ui:TextBlock>
+            <ComboBox IsEditable="True" ItemsSource="{Binding ViewModel.AdministrativeAgency}" Text="{Binding ViewModel.ItemTypes, Mode=TwoWay}" Margin="0,0,0,10" />
+
+            <ui:TextBlock Margin="0, 0, 0, 10">
+                <Run Text="Name" />
+                <Run Text="*" Foreground="OrangeRed"/>
+            </ui:TextBlock>
+            <ui:NumberBox Margin="0,0,0,10" Text="{Binding ViewModel.Name}" />
+            <ui:Button Grid.Row="14" Height="50" Margin="10,10,10,10" HorizontalAlignment="Stretch" Background="CadetBlue" Foreground="white" Content="Add" Command="{Binding ViewModel.AddCommand}"/>
+        </StackPanel>
+    </Grid>
+</Window>
