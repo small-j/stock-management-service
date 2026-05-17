@@ -80,7 +80,7 @@ void NetworkManager::listenRequest() {
 			break;
 		}
 
-		_owner->addRequest(socketKey, req);
+		_owner->addRequest(RequestKeyPair{ socketKey, req });
 	}
 
 	clearSocket(1); // TODO: 멀티 클라이언트로.
@@ -167,14 +167,14 @@ std::shared_ptr<BaseRequest> NetworkManager::recieveFromClient(SOCKET& socket) {
 StockServer::StatusCode NetworkManager::loop() {
 	while (isQuitRequested() == false) {
 		if (_jobQueue.empty()) {
-			LoggerService::debug("network manager queue가 비어있습니다.");
+			//LoggerService::debug("network manager queue가 비어있습니다.");
 			std::this_thread::sleep_for(std::chrono::milliseconds(500)); // cpu 점유 방지.
 		}
 		else {
-			LoggerService::debug("response를 처리합니다. -> client : " + _jobQueue.front().first);
-			sendToClient(_jobQueue.front().first, _jobQueue.front().second);
+			LoggerService::debug("response를 처리합니다. -> client : " + _jobQueue.front().socketKey);
+			sendToClient(_jobQueue.front());
 
-			LoggerService::debug("response 처리가 완료되었습니다. -> client : " + _jobQueue.front().first);
+			LoggerService::debug("response 처리가 완료되었습니다. -> client : " + _jobQueue.front().socketKey);
 			popResponse();
 		}
 	}
@@ -185,11 +185,12 @@ StockServer::StatusCode NetworkManager::loop() {
 }
 
 // TODO: mutex 다른 방식으로 고치기.
-StockServer::StatusCode NetworkManager::addResponse(int socketKey, std::shared_ptr<BaseResponse> res) {
-	if (!res) return StockServer::StatusCode::CANCELLED;
+// 밀어넣는 작업은 순서가 뒤바뀌어도 상관없는데.. 왜 뮤텍스로 처리해줘야하지? 그냥 동시에 접근 가능한 자원은 무조건 뮤텍스 처리해야하나?
+StockServer::StatusCode NetworkManager::addResponse(ResponseKeyPair keyP) {
+	if (!keyP.res) return StockServer::StatusCode::CANCELLED;
 
 	std::lock_guard<std::mutex> lock(_jobQueueMutex);
-	_jobQueue.push({ socketKey, res });
+	_jobQueue.push({ keyP.socketKey, keyP.res });
 	return StockServer::StatusCode::OK;
 }
 
@@ -201,7 +202,7 @@ StockServer::StatusCode NetworkManager::popResponse() {
 	return StockServer::StatusCode::OK;
 }
 
-void NetworkManager::sendToClient(int socketKey, std::shared_ptr<BaseResponse> res) {
+void NetworkManager::sendToClient(ResponseKeyPair keyP) {
 	// TODO: 버퍼 용량 넘는 경우 처리 필요.
 	//int maxDataSize = PACKET_SIZE - RES_STATUS_SIZE - RES_MESSAGE_SIZE;
 
@@ -210,7 +211,7 @@ void NetworkManager::sendToClient(int socketKey, std::shared_ptr<BaseResponse> r
 	//	throw std::out_of_range("데이터 크기가 버퍼 용량을 초과했습니다.");
 	//}
 
-	auto clientSockItr = _clientSocks.find(socketKey);
+	auto clientSockItr = _clientSocks.find(keyP.socketKey);
 	if (clientSockItr == _clientSocks.end()) {
 		LoggerService::error("존재하지 않는 소켓입니다");
 		LoggerService::debug("소켓이 존재하지 않아서 클라이언트에 요청을 반환할 수 없습니다.");
@@ -220,6 +221,6 @@ void NetworkManager::sendToClient(int socketKey, std::shared_ptr<BaseResponse> r
 	char sendBuffer[PACKET_SIZE];
 	memset(sendBuffer, '\0', PACKET_SIZE);
 
-	res->serialize(sendBuffer);
+	keyP.res->serialize(sendBuffer);
 	send(clientSockItr->second.clientSocket, sendBuffer, PACKET_SIZE, 0);
 }

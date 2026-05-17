@@ -4,6 +4,7 @@
 #pragma comment(lib, "ws2_32.lib")
 
 #include "common.h"
+#include "NetworkKeyPair.h"
 
 class App;
 class BaseRequest;
@@ -28,7 +29,7 @@ private:
 	static constexpr unsigned int PORT = 4578;
 
 	std::mutex _jobQueueMutex;
-	std::queue < std::pair<int, std::shared_ptr<BaseResponse> > > _jobQueue;
+	std::queue <ResponseKeyPair> _jobQueue;
 
 	std::map<int, ClientSocketInfo> _clientSocks;
 	
@@ -49,7 +50,7 @@ public:
 	std::shared_ptr<BaseRequest> recieveFromClient(SOCKET& socket);
 
 	StockServer::StatusCode loop(); // queue watching + pop job
-	StockServer::StatusCode addResponse(int socketKey, std::shared_ptr<BaseResponse> req);
+	StockServer::StatusCode addResponse(ResponseKeyPair keyP);
 	StockServer::StatusCode popResponse();
-	void sendToClient(int socketKey, std::shared_ptr<BaseResponse> res);
+	void sendToClient(ResponseKeyPair keyP);
 };

@@ -71,9 +71,6 @@
     <ClInclude Include="ItemType.h">
       <Filter>model</Filter>
     </ClInclude>
-    <ClInclude Include="ItemTypeHelper.h">
-      <Filter>manager</Filter>
-    </ClInclude>
     <ClInclude Include="ItemManager.h">
       <Filter>manager</Filter>
     </ClInclude>
@@ -90,6 +87,12 @@
       <Filter>common</Filter>
     </ClInclude>
     <ClInclude Include="common.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="NetworkKeyPair.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="ItemTypeHelper.h">
       <Filter>common</Filter>
     </ClInclude>
   </ItemGroup>

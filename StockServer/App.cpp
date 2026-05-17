@@ -38,10 +38,10 @@ void App::run() {
 	setStatus(StockServer::ThreadStatus::QUIT);
 }
 
-StockServer::StatusCode App::addRequest(int socketKey, std::shared_ptr<BaseRequest> req) {
-	return _dataManager->addRequest(socketKey, req);
+StockServer::StatusCode App::addRequest(RequestKeyPair keyP) {
+	return _dataManager->addRequest(keyP);
 }
 
-StockServer::StatusCode App::addResponse(int socketKey, std::shared_ptr<BaseResponse> res) {
-	return _networkManager->addResponse(socketKey, res);
+StockServer::StatusCode App::addResponse(ResponseKeyPair keyP) {
+	return _networkManager->addResponse(keyP);
 }

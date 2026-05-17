@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include "common.h"
+#include "NetworkKeyPair.h"
 
 class App;
 
@@ -11,14 +12,14 @@ class StockManager;
 
 class DataManager {
 public:
-	DataManager(App* app);
+	DataManager(App* const app);
 	virtual ~DataManager() = default;
 
 private:
-	App* _owner;
+	App* const _owner;
 	bool _isQuitRequested = false;
 	std::mutex _jobQueueMutex;
-	std::queue<std::pair<int, std::shared_ptr<BaseRequest> > > _jobQueue;
+	std::queue<RequestKeyPair> _jobQueue;
 
 	std::shared_ptr<ItemManager> _itemManager;
 	std::shared_ptr<StockManager> _stockManager;
@@ -28,20 +29,20 @@ public:
 		return _isQuitRequested;
 	}
 	void quit();
-	StockServer::StatusCode loop(); // queue wastching + pop job.
-	StockServer::StatusCode execute(int socketKye, std::shared_ptr<BaseRequest> req);
-	StockServer::StatusCode addRequest(int socketKey, std::shared_ptr<BaseRequest> req);
+	void loop(); // queue watching + pop job.
+	StockServer::StatusCode execute(RequestKeyPair keyP);
+	StockServer::StatusCode addRequest(RequestKeyPair keyP);
 	StockServer::StatusCode popRequest();
  
 	//std::shared_ptr<BaseResponse> makeResponse();
 
-	std::shared_ptr<BaseResponse> callApi(int socketKey, std::shared_ptr<BaseRequest> req);
+	std::shared_ptr<BaseResponse> callApi(RequestKeyPair keyP);
 
-	std::shared_ptr<BaseResponse> menus(int socketKey);
-	std::shared_ptr<BaseResponse> printItemType(int socketKey);
-	std::shared_ptr<BaseResponse> addItem(int socketKey,std::shared_ptr<BaseRequest> req);
-	std::shared_ptr<BaseResponse> removeItem(int socketKey, std::shared_ptr<BaseRequest> req);
-	std::shared_ptr<BaseResponse> printItemList(int socketKey);
-	std::shared_ptr<BaseResponse> addStock(int socketKey, std::shared_ptr<BaseRequest> req);
-	std::shared_ptr<BaseResponse> reduceStock(int socketKey, std::shared_ptr<BaseRequest> req);
+	std::shared_ptr<BaseResponse> menus(RequestKeyPair keyP);
+	std::shared_ptr<BaseResponse> printItemType(RequestKeyPair keyP);
+	std::shared_ptr<BaseResponse> addItem(RequestKeyPair keyP);
+	std::shared_ptr<BaseResponse> removeItem(RequestKeyPair keyP);
+	std::shared_ptr<BaseResponse> printItemList(RequestKeyPair keyP);
+	std::shared_ptr<BaseResponse> addStock(RequestKeyPair keyP);
+	std::shared_ptr<BaseResponse> reduceStock(RequestKeyPair keyP);
 };

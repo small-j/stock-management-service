@@ -154,6 +154,7 @@
   <ItemGroup>
     <ClInclude Include="App.h" />
     <ClInclude Include="common.h" />
+    <ClInclude Include="NetworkKeyPair.h" />
     <ClInclude Include="NetworkManager.h" />
     <ClInclude Include="Item.h" />
     <ClInclude Include="ItemManager.h" />

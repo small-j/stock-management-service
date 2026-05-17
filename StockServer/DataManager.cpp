@@ -39,50 +39,46 @@ void DataManager::quit() {
 	_isQuitRequested = true;
 }
 
-StockServer::StatusCode DataManager::loop() {
+void DataManager::loop() {
 	while (isQuitRequested() == false) {
 		if (_jobQueue.empty()) {
-			LoggerService::debug("data manager queue가 비어있습니다.");
 			std::this_thread::sleep_for(std::chrono::milliseconds(500)); // cpu 점유 방지.
 		}
 		else {
-			LoggerService::debug("request를 처리합니다. -> client : " + _jobQueue.front().first);
-			execute(_jobQueue.front().first, _jobQueue.front().second);
+			LoggerService::debug("request를 처리합니다. -> client : " + _jobQueue.front().socketKey);
 
-			LoggerService::debug("request 처리가 완료되었습니다. -> client : " + _jobQueue.front().first);
+			if (execute(_jobQueue.front()) == StockServer::StatusCode::OK) {
+				LoggerService::debug("request 처리가 완료되었습니다. -> client : " + _jobQueue.front().socketKey);
+			}
+
 			popRequest();
 		}
 	}
-
-	return StockServer::StatusCode::OK;
 }
 
-StockServer::StatusCode DataManager::execute(
-	int socketKey, 
-	std::shared_ptr<BaseRequest> req
-) {
-	if (!req) return StockServer::StatusCode::CANCELLED;
+StockServer::StatusCode DataManager::execute(RequestKeyPair keyP) {
+	if (!keyP.req) return StockServer::StatusCode::CANCELLED;
 
-	std::shared_ptr<BaseResponse> res = callApi(socketKey, req);
+	std::shared_ptr<BaseResponse> res = callApi(keyP);
 
 	if (res == nullptr) {
-		LoggerService::error("데이터 처리 중 알 수 없는 문제가 발생했습니다. -> client : " + socketKey);
+		LoggerService::error("데이터 처리 중 문제가 발생했습니다. -> client : " + keyP.socketKey);
 		return StockServer::StatusCode::CANCELLED;
-		// res가 nullptr일 경우 유저는 결과를 반환받을 수 없다.
+		// TODO: res가 nullptr일 경우 status를 false 로 해서 기본 res 반환하도록 변경하자. res의 생성 책임이 dataManager에 있으니.
 	}
-	_owner->addResponse(socketKey, res);
+	_owner->addResponse(ResponseKeyPair{ keyP.socketKey, res });
 
 	return StockServer::StatusCode::OK;
 }
 
-StockServer::StatusCode DataManager::addRequest(int socketKey, std::shared_ptr<BaseRequest> req) {
-	if (!req) {
-		LoggerService::error("request를 추가할 수 없습니다. : " + socketKey);
+StockServer::StatusCode DataManager::addRequest(RequestKeyPair keyP) {
+	if (!keyP.req) {
+		LoggerService::error("request 값이 정상적이지 않아 처리할 수 없습니다. : " + keyP.socketKey);
 		return StockServer::StatusCode::CANCELLED;
 	}
 
 	std::lock_guard<std::mutex> lock(_jobQueueMutex);
-	_jobQueue.push({ socketKey, req });
+	_jobQueue.push({ keyP.socketKey, keyP. req });
 	return StockServer::StatusCode::OK;
 }
 
@@ -94,36 +90,35 @@ StockServer::StatusCode DataManager::popRequest() {
 	return StockServer::StatusCode::OK;
 }
 
-std::shared_ptr<BaseResponse> DataManager::callApi(
-	int socketKey,
-	std::shared_ptr<BaseRequest> req
-) {
+std::shared_ptr<BaseResponse> DataManager::callApi(RequestKeyPair keyP) {
 
-	switch (req->getCommand())
+	switch (keyP.req->getCommand())
 	{
 	case Request::Command::ADD_ITEM:
-		return addItem(socketKey, req);
+		return addItem(keyP);
 	case Request::Command::REMOVE_ITEM:
-		return removeItem(socketKey, req);
+		return removeItem(keyP);
 	case Request::Command::PRINT_ITEM:
-		return printItemList(socketKey);
+		return printItemList(keyP);
 	case Request::Command::ADD_STOCK:
-		return addStock(socketKey, req);
+		return addStock(keyP);
 	case Request::Command::REDUCE_STOCK:
-		return reduceStock(socketKey, req);
+		return reduceStock(keyP);
 	case Request::Command::GET_ITEM_TYPE:
-		return printItemType(socketKey);
+		return printItemType(keyP);
 	case Request::Command::GET_MENU:
-		return menus(socketKey);
+		return menus(keyP);
 	default:
 		return nullptr;
 	}
 }
 
-// TODO: 서버에서 제공하는 API 목록으로 개선 필요.
-std::shared_ptr<BaseResponse> DataManager::menus(
-	int socketKey
-) {
+// TODO: datas -> class DTO 형태로 바꿔서 클라이언트에 보내는 형태로 deserialize 하도록 하자. -> response에 class dto를 넘기면 알아서 deserialize 하는 형태로.
+// DTO는 DataManager에서 알고 있는 형태고, 데이터를 클라이언트에 전달할 때 사용하는 공개된 데이터 형태이다.
+// response는 dataManager와 분리.
+// 문제는.. BaseDTO로 모든 DTO를 받도록 해야하나? -> factory class에서?
+
+std::shared_ptr<BaseResponse> DataManager::menus(RequestKeyPair keyP) {
 	std::string menuStr[] = {
 		"1. 아이템 추가",
 		"2. 아이템 삭제",
@@ -144,14 +139,14 @@ std::shared_ptr<BaseResponse> DataManager::menus(
 	std::shared_ptr<BaseResponse> res = std::make_shared<GetMenusResponse>(true, msg, datas);
 
 	if (res == nullptr) {
-		LoggerService::error("get menu 처리 중 알 수 없는 문제가 발생했습니다. : " + socketKey);
+		LoggerService::error("get menu 처리 중 알 수 없는 문제가 발생했습니다. : " + keyP.socketKey);
 		return std::make_shared<GetMenusResponse>(); // TODO: 강제로 이 로직을 타도록 테스트하기.
 	}
 
 	return res;
 }
 
-std::shared_ptr<BaseResponse> DataManager::printItemType(int socketKey)
+std::shared_ptr<BaseResponse> DataManager::printItemType(RequestKeyPair keyP)
 {
 	std::vector<std::string> itemTypeStr = ItemTypeHelper::getAllItemInfosToString();
 
@@ -168,18 +163,16 @@ std::shared_ptr<BaseResponse> DataManager::printItemType(int socketKey)
 	std::shared_ptr<BaseResponse> res = std::make_shared<GetItemTypesResponse>(true, msg, datas);
 	
 	if (res == nullptr) {
-		LoggerService::error("print item types 처리 중 알 수 없는 문제가 발생했습니다. : " + socketKey);
+		LoggerService::error("print item types 처리 중 알 수 없는 문제가 발생했습니다. : " + keyP.socketKey);
 		return std::make_shared<GetItemTypesResponse>();
 	}
 
 	return res;
 }
 
-std::shared_ptr<BaseResponse> DataManager::addItem(
-	int socketKey,
-	std::shared_ptr<BaseRequest> req
-) {
-	auto paredReq = std::dynamic_pointer_cast<AddItemRequest>(req);
+std::shared_ptr<BaseResponse> DataManager::addItem(RequestKeyPair keyP) {
+	auto paredReq = std::dynamic_pointer_cast<AddItemRequest>(keyP.req);
+	// 캐스팅에 실패할 경우 어떤 값이 반환되지? nullptr?
 	//TODO: 유저 입력 형식 문제 처리하기.
 
 	std::shared_ptr<BaseResponse> res = nullptr;
@@ -199,18 +192,15 @@ std::shared_ptr<BaseResponse> DataManager::addItem(
 
 	if (res == nullptr) {
 		std::string msg = "알 수 없는 에러가 발생했습니다.";
-		LoggerService::error("add item 처리 중 알 수 없는 문제가 발생했습니다. : " + socketKey);
+		LoggerService::error("add item 처리 중 알 수 없는 문제가 발생했습니다. : " + keyP.socketKey);
 		return std::make_shared<AddItemResponse>(false, msg);
 	}
 
 	return res;
 }
 
-std::shared_ptr<BaseResponse> DataManager::removeItem(
-	int socketKey,
-	std::shared_ptr<BaseRequest> req
-) {
-	auto paredReq = std::dynamic_pointer_cast<RemoveItemRequest>(req);
+std::shared_ptr<BaseResponse> DataManager::removeItem(RequestKeyPair keyP) {
+	auto paredReq = std::dynamic_pointer_cast<RemoveItemRequest>(keyP.req);
 	std::shared_ptr<BaseResponse> res = nullptr;
 
 	std::string msg;
@@ -242,7 +232,7 @@ std::shared_ptr<BaseResponse> DataManager::removeItem(
 	}
 
 	if (res == nullptr) {
-		LoggerService::error("remove item 처리 중 알 수 없는 문제가 발생했습니다. : " + socketKey);
+		LoggerService::error("remove item 처리 중 알 수 없는 문제가 발생했습니다. : " + keyP.socketKey);
 		msg = "알 수 없는 에러가 발생했습니다.";
 		return std::make_shared<RemoveItemResponse>(false, msg);
 	}
@@ -250,27 +240,22 @@ std::shared_ptr<BaseResponse> DataManager::removeItem(
 	return res;
 }
 
-std::shared_ptr<BaseResponse> DataManager::printItemList(
-	int socketKey
-) {
+std::shared_ptr<BaseResponse> DataManager::printItemList(RequestKeyPair keyP) {
 	std::string itemListStr = _itemManager->itemListToString();
 	std::string msg = "success";
 
 	std::shared_ptr<BaseResponse> res = std::make_shared<PrintItemResponse>(true, msg, itemListStr);
 	
 	if (res == nullptr) {
-		LoggerService::error("print item list 처리 중 알 수 없는 문제가 발생했습니다. : " + socketKey);
+		LoggerService::error("print item list 처리 중 알 수 없는 문제가 발생했습니다. : " + keyP.socketKey);
 		return std::make_shared<PrintItemResponse>();
 	}
 
 	return res;
 }
 
-std::shared_ptr<BaseResponse> DataManager::addStock(
-	int socketKey,
-	std::shared_ptr<BaseRequest> req
-) {
-	auto paredReq = std::dynamic_pointer_cast<AddStockRequest>(req);
+std::shared_ptr<BaseResponse> DataManager::addStock(RequestKeyPair keyP) {
+	auto paredReq = std::dynamic_pointer_cast<AddStockRequest>(keyP.req);
 	std::shared_ptr<BaseResponse> res = nullptr;
 
 	std::string msg;
@@ -282,7 +267,7 @@ std::shared_ptr<BaseResponse> DataManager::addStock(
 		res = std::make_shared<AddStockResponse>(false, msg);
 
 		if (res == nullptr) {
-			LoggerService::error("add stock 처리 중 알 수 없는 문제가 발생했습니다. : " + socketKey);
+			LoggerService::error("add stock 처리 중 알 수 없는 문제가 발생했습니다. : " + keyP.socketKey);
 			msg = "알 수 없는 에러가 발생했습니다.";
 			return std::make_shared<AddStockResponse>(false, msg);
 		}
@@ -305,7 +290,7 @@ std::shared_ptr<BaseResponse> DataManager::addStock(
 	}
 
 	if (res == nullptr) {
-		LoggerService::error("add stock 처리 중 알 수 없는 문제가 발생했습니다. : " + socketKey);
+		LoggerService::error("add stock 처리 중 알 수 없는 문제가 발생했습니다. : " + keyP.socketKey);
 		msg = "알 수 없는 에러가 발생했습니다.";
 		return std::make_shared<AddStockResponse>(false, msg);
 	}
@@ -313,11 +298,8 @@ std::shared_ptr<BaseResponse> DataManager::addStock(
 	return res;
 }
 
-std::shared_ptr<BaseResponse> DataManager::reduceStock(
-	int socketKey,
-	std::shared_ptr<BaseRequest> req
-) {
-	auto paredReq = std::dynamic_pointer_cast<ReduceStockRequest>(req);
+std::shared_ptr<BaseResponse> DataManager::reduceStock(RequestKeyPair keyP) {
+	auto paredReq = std::dynamic_pointer_cast<ReduceStockRequest>(keyP.req);
 	std::shared_ptr<BaseResponse> res = nullptr;
 
 	std::string msg;
@@ -337,7 +319,7 @@ std::shared_ptr<BaseResponse> DataManager::reduceStock(
 	}
 
 	if (res == nullptr) {
-		LoggerService::error("reduce stock 처리 중 알 수 없는 문제가 발생했습니다. : " + socketKey);
+		LoggerService::error("reduce stock 처리 중 알 수 없는 문제가 발생했습니다. : " + keyP.socketKey);
 		msg = "알 수 없는 에러가 발생했습니다.";
 		return std::make_shared<ReduceStockResponse>(false, msg);
 	}

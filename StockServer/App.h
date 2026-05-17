@@ -1,5 +1,7 @@
 ﻿#pragma once
 
+#include "NetworkKeyPair.h"
+
 class NetworkManager;
 class DataManager;
 class BaseRequest;
@@ -21,8 +23,8 @@ protected:
 
 public:
 	void run();
-	StockServer::StatusCode addRequest(int socketKey, std::shared_ptr<BaseRequest> req);
-	StockServer::StatusCode addResponse(int socketKey, std::shared_ptr<BaseResponse> res);
+	StockServer::StatusCode addRequest(RequestKeyPair key);
+	StockServer::StatusCode addResponse(ResponseKeyPair key);
 
 	StockServer::ThreadStatus getStatus() { return _appStatus; };
 };
