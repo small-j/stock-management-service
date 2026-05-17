@@ -10,6 +10,7 @@
 #include <iostream>
 #include <vector>
 #include <string>
+#include <memory>
 
 #include "ItemType.h"
 #include "Status.h"
