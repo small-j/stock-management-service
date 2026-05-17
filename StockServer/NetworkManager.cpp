@@ -171,10 +171,10 @@ StockServer::StatusCode NetworkManager::loop() {
 			std::this_thread::sleep_for(std::chrono::milliseconds(500)); // cpu 점유 방지.
 		}
 		else {
-			LoggerService::debug("response를 처리합니다. -> client : " + _jobQueue.front().socketKey);
+			LoggerService::debug("response를 처리합니다. -> client : " + std::to_string(_jobQueue.front().socketKey));
 			sendToClient(_jobQueue.front());
 
-			LoggerService::debug("response 처리가 완료되었습니다. -> client : " + _jobQueue.front().socketKey);
+			LoggerService::debug("response 처리가 완료되었습니다. -> client : " + std::to_string(_jobQueue.front().socketKey));
 			popResponse();
 		}
 	}
