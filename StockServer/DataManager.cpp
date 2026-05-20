@@ -17,20 +17,16 @@
 #include "BaseRequest.h"
 #include "BaseResponse.h"
 
-#include "GetMenusResponse.h"
-#include "GetItemTypesResponse.h"
-#include "AddItemRequest.h"
-#include "AddItemResponse.h"
-#include "RemoveItemRequest.h"
-#include "RemoveItemResponse.h"
-#include "PrintItemResponse.h"
-#include "AddStockRequest.h"
-#include "AddStockResponse.h"
-#include "ReduceStockRequest.h"
-#include "ReduceStockResponse.h"
+#include "ResponseFactory.h"
+#include "DtoFactory.h"
 
-DataManager::DataManager(App* app) : _owner(app) {
-	_itemManager = std::make_shared <ItemManager>();
+#include "AddItemDto.h"
+#include "RemoveItemDto.h"
+#include "AddStockDto.h"
+#include "ReduceStockDto.h"
+
+DataManager::DataManager(App* const app) : _owner(app) {
+	_itemManager = std::make_shared<ItemManager>();
 	_stockManager = std::make_shared<StockManager>();
 }
 
@@ -136,11 +132,11 @@ std::shared_ptr<BaseResponse> DataManager::menus(RequestKeyPair keyP) {
 	}
 
 	std::string msg = "success";
-	std::shared_ptr<BaseResponse> res = std::make_shared<GetMenusResponse>(true, msg, datas);
+	std::shared_ptr<BaseResponse> res = ResponseFactory::createResponseFromReq(keyP.req->getCommand(), true, msg, datas);
 
 	if (res == nullptr) {
 		LoggerService::error("get menu 처리 중 알 수 없는 문제가 발생했습니다. : " + std::to_string(keyP.socketKey));
-		return std::make_shared<GetMenusResponse>(); // TODO: 강제로 이 로직을 타도록 테스트하기.
+		return ResponseFactory::createResponseFromReq(keyP.req->getCommand()); // TODO: 강제로 이 로직을 타도록 테스트하기.
 	}
 
 	return res;
@@ -149,6 +145,7 @@ std::shared_ptr<BaseResponse> DataManager::menus(RequestKeyPair keyP) {
 std::shared_ptr<BaseResponse> DataManager::printItemType(RequestKeyPair keyP)
 {
 	std::vector<std::string> itemTypeStr = ItemTypeHelper::getAllItemInfosToString();
+	// TODO: 위의 경우에도 검사해야하나?  null이 들어갈 경우가 없는데.
 
 	std::string msg = "success";
 
@@ -160,81 +157,92 @@ std::shared_ptr<BaseResponse> DataManager::printItemType(RequestKeyPair keyP)
 		if (i != len - 1) datas += ',';
 	}
 
-	std::shared_ptr<BaseResponse> res = std::make_shared<GetItemTypesResponse>(true, msg, datas);
+	std::shared_ptr<BaseResponse> res = ResponseFactory::createResponseFromReq(keyP.req->getCommand(), true, msg, datas);
 	
 	if (res == nullptr) {
 		LoggerService::error("print item types 처리 중 알 수 없는 문제가 발생했습니다. : " + std::to_string(keyP.socketKey));
-		return std::make_shared<GetItemTypesResponse>();
+		return ResponseFactory::createResponseFromReq(keyP.req->getCommand());
 	}
 
 	return res;
 }
 
 std::shared_ptr<BaseResponse> DataManager::addItem(RequestKeyPair keyP) {
-	auto paredReq = std::dynamic_pointer_cast<AddItemRequest>(keyP.req);
-	// 캐스팅에 실패할 경우 어떤 값이 반환되지? nullptr?
-	//TODO: 유저 입력 형식 문제 처리하기.
+	std::shared_ptr<AddItemDto> dto = DtoFactory::getAddItemDtoFromReq(keyP.req);
+	
+	if (dto == nullptr) {
+		std::string msg = "입력 형식이 잘못되었습니다.";
+		LoggerService::error(msg);
+		return ResponseFactory::createResponseFromReq(keyP.req->getCommand(), false, msg);
+	}
 
 	std::shared_ptr<BaseResponse> res = nullptr;
 
 	if (_itemManager->addItem(
-		paredReq.get()->getName(),
-		static_cast<ItemType>(paredReq.get()->getItemType() - 1)
+		dto->getName(),
+		static_cast<ItemType>(dto->getItemType() - 1)
 	) == StockServer::StatusCode::OK
 		) {
 		std::string msg = "아이템이 추가되었습니다.\n";
-		res = std::make_shared<AddItemResponse>(true, msg);
+		res = ResponseFactory::createResponseFromReq(keyP.req->getCommand(), true, msg);
 	}
 	else {
 		std::string msg = "아이템 추가에 실패했습니다.\n";
-		res = std::make_shared<AddItemResponse>(false, msg);
+		res = ResponseFactory::createResponseFromReq(keyP.req->getCommand(), false, msg);
 	}
 
 	if (res == nullptr) {
 		std::string msg = "알 수 없는 에러가 발생했습니다.";
 		LoggerService::error("add item 처리 중 알 수 없는 문제가 발생했습니다. : " + std::to_string(keyP.socketKey));
-		return std::make_shared<AddItemResponse>(false, msg);
+		return ResponseFactory::createResponseFromReq(keyP.req->getCommand(), false, msg);
 	}
 
 	return res;
 }
 
 std::shared_ptr<BaseResponse> DataManager::removeItem(RequestKeyPair keyP) {
-	auto paredReq = std::dynamic_pointer_cast<RemoveItemRequest>(keyP.req);
-	std::shared_ptr<BaseResponse> res = nullptr;
+	std::shared_ptr<RemoveItemDto> dto = DtoFactory::getRemoveItemDtoFromReq(keyP.req);
 
+	if (dto == nullptr) {
+		std::string msg = "입력 형식이 잘못되었습니다.";
+		LoggerService::error(msg);
+		return ResponseFactory::createResponseFromReq(keyP.req->getCommand(), false, msg);
+	}
+
+	std::shared_ptr<BaseResponse> res = nullptr;
 	std::string msg;
-	std::shared_ptr<Stock> stock = _stockManager->findStockByItemId(paredReq.get()->getItemId());
+	std::shared_ptr<Stock> stock = _stockManager->findStockByItemId(dto->getItemId());
+
 	if (stock != nullptr)
 	{
 		msg = "해당 아이템은 재고가 남아있어 삭제할 수 없습니다.\n";
-		res = std::make_shared<RemoveItemResponse>(false, msg);
+		res = ResponseFactory::createResponseFromReq(keyP.req->getCommand(), false, msg);
 
 		if (res == nullptr) {
 			msg = "알 수 없는 에러가 발생했습니다.";
-			return std::make_shared<RemoveItemResponse>(false, msg);
+			return ResponseFactory::createResponseFromReq(keyP.req->getCommand(), false, msg);
 		}
 		
 		return res;
 	}
 
 	if (_itemManager->removeItem(
-		paredReq.get()->getItemId()
+		dto->getItemId()
 	) == StockServer::StatusCode::OK)
 	{
-		msg = std::to_string(paredReq.get()->getItemId()) + " 아이템이 삭제되었습니다.\n";
-		res = std::make_shared<RemoveItemResponse>(true, msg);
+		msg = std::to_string(dto->getItemId()) + " 아이템이 삭제되었습니다.\n";
+		res = ResponseFactory::createResponseFromReq(keyP.req->getCommand(), true, msg);
 	}
 	else
 	{
 		msg = "아이템을 삭제할 수 없습니다.\n";
-		res = std::make_shared<RemoveItemResponse>(false, msg);
+		res = ResponseFactory::createResponseFromReq(keyP.req->getCommand(), false, msg);
 	}
 
 	if (res == nullptr) {
 		LoggerService::error("remove item 처리 중 알 수 없는 문제가 발생했습니다. : " + std::to_string(keyP.socketKey));
 		msg = "알 수 없는 에러가 발생했습니다.";
-		return std::make_shared<RemoveItemResponse>(false, msg);
+		return ResponseFactory::createResponseFromReq(keyP.req->getCommand(), false, msg);
 	}
 
 	return res;
@@ -244,84 +252,96 @@ std::shared_ptr<BaseResponse> DataManager::printItemList(RequestKeyPair keyP) {
 	std::string itemListStr = _itemManager->itemListToString();
 	std::string msg = "success";
 
-	std::shared_ptr<BaseResponse> res = std::make_shared<PrintItemResponse>(true, msg, itemListStr);
+	std::shared_ptr<BaseResponse> res = ResponseFactory::createResponseFromReq(keyP.req->getCommand(), true, msg, itemListStr);
 	
 	if (res == nullptr) {
 		LoggerService::error("print item list 처리 중 알 수 없는 문제가 발생했습니다. : " + std::to_string(keyP.socketKey));
-		return std::make_shared<PrintItemResponse>();
+		return ResponseFactory::createResponseFromReq(keyP.req->getCommand());
 	}
 
 	return res;
 }
 
 std::shared_ptr<BaseResponse> DataManager::addStock(RequestKeyPair keyP) {
-	auto paredReq = std::dynamic_pointer_cast<AddStockRequest>(keyP.req);
-	std::shared_ptr<BaseResponse> res = nullptr;
+	std::shared_ptr<AddStockDto> dto = DtoFactory::getAddStockDtoFromReq(keyP.req);
 
+	if (dto == nullptr) {
+		std::string msg = "입력 형식이 잘못되었습니다.";
+		LoggerService::error(msg);
+		return ResponseFactory::createResponseFromReq(keyP.req->getCommand(), false, msg);
+	}
+
+	std::shared_ptr<BaseResponse> res = nullptr;
 	std::string msg;
 
-	std::shared_ptr<Item> item = _itemManager->findItemById(paredReq.get()->getItemId());
+	std::shared_ptr<Item> item = _itemManager->findItemById(dto->getItemId());
 	if (item == nullptr)
 	{
 		msg = "아이템이 존재하지 않습니다\n";
-		res = std::make_shared<AddStockResponse>(false, msg);
+		res = ResponseFactory::createResponseFromReq(keyP.req->getCommand(), false, msg);
 
 		if (res == nullptr) {
 			LoggerService::error("add stock 처리 중 알 수 없는 문제가 발생했습니다. : " + std::to_string(keyP.socketKey));
 			msg = "알 수 없는 에러가 발생했습니다.";
-			return std::make_shared<AddStockResponse>(false, msg);
+			return ResponseFactory::createResponseFromReq(keyP.req->getCommand(), false, msg);
 		}
 
 		return res;
 	}
 
 	if (_stockManager->addStock(
-		paredReq.get()->getItemId(),
-		paredReq.get()->getCount()
+		dto->getItemId(),
+		dto->getCount()
 	) == StockServer::StatusCode::OK)
 	{
 		msg = "재고가 늘어났습니다.\n";
-		res = std::make_shared<AddStockResponse>(true, msg);
+		res = ResponseFactory::createResponseFromReq(keyP.req->getCommand(), true, msg);
 	}
 	else
 	{
 		msg = "재고를 추가할 수 없습니다.\n";
-		res = std::make_shared<AddStockResponse>(false, msg);
+		res = ResponseFactory::createResponseFromReq(keyP.req->getCommand(), false, msg);
 	}
 
 	if (res == nullptr) {
 		LoggerService::error("add stock 처리 중 알 수 없는 문제가 발생했습니다. : " + std::to_string(keyP.socketKey));
 		msg = "알 수 없는 에러가 발생했습니다.";
-		return std::make_shared<AddStockResponse>(false, msg);
+		return ResponseFactory::createResponseFromReq(keyP.req->getCommand(), false, msg);
 	}
 	
 	return res;
 }
 
 std::shared_ptr<BaseResponse> DataManager::reduceStock(RequestKeyPair keyP) {
-	auto paredReq = std::dynamic_pointer_cast<ReduceStockRequest>(keyP.req);
-	std::shared_ptr<BaseResponse> res = nullptr;
+	std::shared_ptr<ReduceStockDto> dto = DtoFactory::getReduceStockDtoFromReq(keyP.req);
 
+	if (dto == nullptr) {
+		std::string msg = "입력 형식이 잘못되었습니다.";
+		LoggerService::error(msg);
+		return ResponseFactory::createResponseFromReq(keyP.req->getCommand(), false, msg);
+	}
+
+	std::shared_ptr<BaseResponse> res = nullptr;
 	std::string msg;
 
 	if (_stockManager->reduceStock(
-		paredReq.get()->getItemId(),
-		paredReq.get()->getCount()
+		dto->getItemId(),
+		dto->getCount()
 	) == StockServer::StatusCode::OK)
 	{
 		msg = "재고가 삭제되었습니다.\n";
-		res = std::make_shared<ReduceStockResponse>(true, msg);
+		res = ResponseFactory::createResponseFromReq(keyP.req->getCommand(), true, msg);
 	}
 	else
 	{
 		msg = "재고 삭제에 실패했습니다.\n";
-		res = std::make_shared<ReduceStockResponse>(false, msg);
+		res = ResponseFactory::createResponseFromReq(keyP.req->getCommand(), false, msg);
 	}
 
 	if (res == nullptr) {
 		LoggerService::error("reduce stock 처리 중 알 수 없는 문제가 발생했습니다. : " + std::to_string(keyP.socketKey));
 		msg = "알 수 없는 에러가 발생했습니다.";
-		return std::make_shared<ReduceStockResponse>(false, msg);
+		return ResponseFactory::createResponseFromReq(keyP.req->getCommand(), false, msg);
 	}
 
 	return res;

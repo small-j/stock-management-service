@@ -16,6 +16,9 @@
     <Filter Include="common">
       <UniqueIdentifier>{d210711a-7c38-4ec2-9304-4427049f936c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="dto">
+      <UniqueIdentifier>{5216b112-b003-4cc8-b28f-de65275324d5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -81,6 +84,24 @@
     <ClInclude Include="LoggerService.h">
       <Filter>common</Filter>
     </ClInclude>
+    <ClInclude Include="ResponseFactory.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="AddItemDto.h">
+      <Filter>dto</Filter>
+    </ClInclude>
+    <ClInclude Include="DtoFactory.h">
+      <Filter>dto</Filter>
+    </ClInclude>
+    <ClInclude Include="RemoveItemDto.h">
+      <Filter>dto</Filter>
+    </ClInclude>
+    <ClInclude Include="AddStockDto.h">
+      <Filter>dto</Filter>
+    </ClInclude>
+    <ClInclude Include="ReduceStockDto.h">
+      <Filter>dto</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -118,6 +139,12 @@
     </ClCompile>
     <ClCompile Include="LoggerService.cpp">
       <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="ResponseFactory.cpp">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="DtoFactory.cpp">
+      <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
