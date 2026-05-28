@@ -24,7 +24,8 @@ namespace StockClient_WPF.Views.Pages
 
         public Main(MainViewModel viewModel)
         {
-            this.ViewModel = viewModel;
+            ViewModel = viewModel;
+            DataContext = this;
 
             InitializeComponent();
         }

@@ -17,14 +17,14 @@
 
         <StackPanel Grid.Column="0" Margin="10,10,10,10" >
             <ui:Button Margin="0,0,0,10" Grid.Row="14" Height="35" Width="100" Background="CadetBlue" Foreground="white" Content="Add Item" Command="{Binding ViewModel.AddItemCommand}"/>
-            <Grid x:Name="itemDgGrid" Grid.Column="1" Visibility="Collapsed">
-                <DataGrid ItemsSource="{Binding ViewModel.Items, Mode=OneWay}" />
+            <Grid x:Name="itemDgGrid" Grid.Column="1" Height="300">
+                <DataGrid Foreground="Black" ItemsSource="{Binding ViewModel.Items}" />
             </Grid>
         </StackPanel>
-        <StackPanel Grid.Column="1"  Margin="10,10,10,10" >
+        <StackPanel Grid.Column="1" Margin="10,10,10,10" >
             <ui:Button Margin="0,0,0,10" Grid.Row="14" Height="35" Width="100" Background="CadetBlue" Foreground="white" Content="Add stock" Command="{Binding ViewModel.AddStockCommand}"/>
-            <Grid x:Name="stockDgGrid" Grid.Column="1" Visibility="Collapsed">
-                <DataGrid ItemsSource="{Binding ViewModel.Stocks, Mode=OneWay}" />
+            <Grid x:Name="stockDgGrid" Grid.Column="1" Height="300">
+                <DataGrid ItemsSource="{Binding ViewModel.Stocks}" />
             </Grid>
         </StackPanel>
     </Grid>
