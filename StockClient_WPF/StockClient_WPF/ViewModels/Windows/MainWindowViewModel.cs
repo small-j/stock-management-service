@@ -17,6 +17,11 @@ namespace StockClient_WPF.ViewModels.Windows
         {
             this._serverConnection = serverConnection;
 
+            initialize();
+        }
+
+        public void initialize()
+        {
             GetMenusRequest req = new GetMenusRequest();
             var packet = new Packet
             {

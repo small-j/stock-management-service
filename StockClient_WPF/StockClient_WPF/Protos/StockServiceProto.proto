@@ -67,11 +67,6 @@ message GetItemsResponse {
 }
 
 message StockDto {
-	int32 itemId = 1;
-	uint32 count = 2;
-}
-
-message StockDto {
 	int32 id = 1;
 	int32 itemId = 2;
 	uint32 count = 3;

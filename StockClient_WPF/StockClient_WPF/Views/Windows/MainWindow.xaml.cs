@@ -28,6 +28,7 @@ namespace StockClient_WPF.Views.Windows
         public MainWindow(MainWindowViewModel viewModel)
         {
             ViewModel = viewModel;
+            DataContext = this;
 
             InitializeComponent();
 
