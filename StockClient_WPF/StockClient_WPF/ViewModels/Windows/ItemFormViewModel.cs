@@ -93,6 +93,8 @@ namespace StockClient_WPF.ViewModels.Windows
                 AddItemResponse res = resP.AddItemRes;
                 if (res.Status)
                 {
+                    SelectedItemType = -1;
+                    Name = "";
                     RequestClose?.Invoke();
                     // TODO: 부모 window에 items 값을 전달한다. (재호출해서 업데이트 된 결과를 받아야 함.)
                     // 즉, 추후에는 업데이트 된 결과가 올때까지 기다린다?
