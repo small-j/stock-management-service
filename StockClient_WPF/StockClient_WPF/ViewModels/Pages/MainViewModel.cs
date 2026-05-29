@@ -16,6 +16,8 @@ namespace StockClient_WPF.ViewModels.Pages
         [ObservableProperty]
         private ObservableCollection<ResItemDto> _items;
 
+        private Dictionary<int, string> _itemTypes;
+
         //[ObservableProperty]
         //private ResStockDto? _stocks;
 
@@ -23,9 +25,10 @@ namespace StockClient_WPF.ViewModels.Pages
         public MainViewModel(IServerConnection<Packet, Packet> serverConnection)
         {
             this._serverConnection = serverConnection;
+            this._items = new ObservableCollection<ResItemDto>();
 
+            UpdateItemTypes();
             UpdateItems();
-
         }
 
         [RelayCommand]
@@ -57,9 +60,42 @@ namespace StockClient_WPF.ViewModels.Pages
             if (resP.Type == PacketType.GetItems)
             {
                 GetItemsResponse res = resP.GetItemsRes;
+                if (res.Status && this._itemTypes != null)
+                {
+                    this.Items = new ObservableCollection<ResItemDto>(
+                        res.ResItemDto.Select(t => new ResItemDto() {
+                           Id = t.Id,
+                           Name = t.Name,
+                           ItemType = this._itemTypes[t.ItemType],
+                        })
+                    );
+                }
+                else
+                {
+                    // null일 경우 화면에 에러 문구 띄워주기 -> 다시 서버에 요청해주세요.
+                    Console.WriteLine($"실패: {res.Message}");
+                }
+            }
+        }
+
+        [RelayCommand]
+        private void UpdateItemTypes()
+        {
+            Packet packet = new Packet
+            {
+                Type = PacketType.GetItemType,
+                GetItemTypesReq = new GetItemTypesRequest()
+            };
+
+            this._serverConnection.Send(packet);
+            Packet resP = this._serverConnection.Receive(1024);
+
+            if (resP.Type == PacketType.GetItemType)
+            {
+                GetItemTypesResponse res = resP.GetItemTypesRes;
                 if (res.Status)
                 {
-                    this._items = new ObservableCollection<ResItemDto>(res.ResItemDto);
+                    this._itemTypes = res.ItemTypes.ToDictionary(t => t.Id, t => t.Name);
                 }
                 else
                 {
