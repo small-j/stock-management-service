@@ -42,6 +42,7 @@ namespace StockClient_WPF.ViewModels.Pages
             stockFormWindow.Show();
         }
 
+        [RelayCommand]
         private void UpdateItems()
         {
             Packet packet = new Packet

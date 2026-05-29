@@ -16,7 +16,14 @@
         </Grid.ColumnDefinitions>
 
         <StackPanel Grid.Column="0" Margin="10,10,10,10" >
-            <ui:Button Margin="0,0,0,10" Grid.Row="14" Height="35" Width="100" Background="CadetBlue" Foreground="white" Content="Add Item" Command="{Binding ViewModel.AddItemCommand}"/>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="130"/>
+                    <ColumnDefinition />
+                </Grid.ColumnDefinitions>
+                <ui:Button Grid.Column="0" Margin="0,0,10,10" Grid.Row="14" Height="35" Width="100" Background="CadetBlue" Foreground="white" Content="Add Item" Command="{Binding ViewModel.AddItemCommand}"/>
+                <ui:Button Grid.Column="1" Margin="0,0,10,10" Grid.Row="14" Height="35" Width="70" Background="Black" Content="refresh" Command="{Binding ViewModel.UpdateItemsCommand}" />
+            </Grid>
             <Grid x:Name="itemDgGrid" Grid.Column="1">
                 <DataGrid Foreground="Black" ItemsSource="{Binding ViewModel.Items}" BorderBrush="Black" BorderThickness="1" />
             </Grid>
