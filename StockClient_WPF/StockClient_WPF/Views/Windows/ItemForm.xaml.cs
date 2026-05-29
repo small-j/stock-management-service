@@ -27,6 +27,8 @@ namespace StockClient_WPF.Views.Windows
             DataContext = this;
 
             InitializeComponent();
+
+            ViewModel.RequestClose += () => Close();
         }
     }
 }
