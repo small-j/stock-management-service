@@ -1,4 +1,6 @@
-﻿using System;
+﻿using StockClient_WPF.ViewModels.Pages;
+using StockClient_WPF.ViewModels.Windows;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Windows;
@@ -17,8 +19,13 @@ namespace StockClient_WPF.Views.Windows
     /// </summary>
     public partial class ItemForm : Window
     {
-        public ItemForm()
+        public ItemFormViewModel ViewModel { get; }
+
+        public ItemForm(ItemFormViewModel viewModel)
         {
+            ViewModel = viewModel;
+            DataContext = this;
+
             InitializeComponent();
         }
     }

@@ -197,8 +197,8 @@ namespace StockClient_WPF.Services
                 Status = true,
                 Message = "success",
             };
-            res.ItemTypes.Add("Food");
-            res.ItemTypes.Add("Clothes");
+            res.ItemTypes.Add(new ItemTypeDto() { Id=1, Name="Food" });
+            res.ItemTypes.Add(new ItemTypeDto() { Id = 2, Name = "Clothes" });
 
             return res;
         }

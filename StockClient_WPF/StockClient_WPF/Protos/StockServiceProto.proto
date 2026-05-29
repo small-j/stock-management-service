@@ -12,8 +12,6 @@ enum PacketType {
 	GET_MENU = 3001;
 }
 
-// itemType은 클라이언트, 서버 공유 안하는게 맞을까?.
-
 // message
 message GetMenusRequest {
 }
@@ -34,6 +32,11 @@ message ResItemDto {
 	int32 id = 1;
 	string name = 2;
 	int32 itemType = 3;
+}
+
+message ItemTypeDto {
+	int32 id = 1;
+	string name = 2;
 }
 
 message AddItemRequest {
@@ -98,7 +101,7 @@ message GetItemTypesRequest {
 message GetItemTypesResponse {
 	bool status = 1;
 	string message = 2;
-	repeated string itemTypes = 3;
+	repeated ItemTypeDto itemTypes = 3;
 }
 
 message Packet {
