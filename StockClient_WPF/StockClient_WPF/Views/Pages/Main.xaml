@@ -25,7 +25,24 @@
                 <ui:Button Grid.Column="1" Margin="0,0,10,10" Grid.Row="14" Height="35" Width="70" Background="Black" Content="refresh" Command="{Binding ViewModel.UpdateItemsCommand}" />
             </Grid>
             <Grid x:Name="itemDgGrid" Grid.Column="1">
-                <DataGrid Foreground="Black" ItemsSource="{Binding ViewModel.Items}" BorderBrush="Black" BorderThickness="1" />
+                <DataGrid Foreground="Black" ItemsSource="{Binding ViewModel.Items}" BorderBrush="Black" BorderThickness="1">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="ID"  Binding="{Binding Id}" />
+                        <DataGridTextColumn Header="이름"  Binding="{Binding Name}" />
+                        <DataGridTextColumn Header="아이템 종류" Binding="{Binding ItemType}" />
+
+                        <!-- 버튼 열 추가 -->
+                        <DataGridTemplateColumn Header="관리">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Button Content="삭제"
+                                        Command="{Binding DataContext.ViewModel.DeleteItemCommand, RelativeSource={RelativeSource AncestorType=DataGrid}}"
+                                        CommandParameter="{Binding Id}" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                    </DataGrid.Columns>
+                </DataGrid>
             </Grid>
         </StackPanel>
         <StackPanel Grid.Column="1" Margin="10,10,10,10" >

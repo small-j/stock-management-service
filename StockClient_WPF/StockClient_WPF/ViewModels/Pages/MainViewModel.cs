@@ -79,6 +79,40 @@ namespace StockClient_WPF.ViewModels.Pages
         }
 
         [RelayCommand]
+        private void DeleteItem(int id)
+        {
+            Packet packet = new Packet
+            {
+                Type = PacketType.RemoveItem,
+                RemoveItemReq = new RemoveItemRequest()
+                {
+                    ItemId = id
+                }
+            };
+
+            this._serverConnection.Send(packet);
+            Packet resP = this._serverConnection.Receive(1024);
+
+            if (resP.Type == PacketType.RemoveItem)
+            {
+                RemoveItemResponse res = resP.RemoveItemRes;
+                if (res.Status)
+                {
+                    var item = this.Items.FirstOrDefault(item => item.Id == id);
+                    if (item != null)
+                    {
+                        this.Items.Remove(item);
+                    }
+                }
+                else
+                {
+                    // null일 경우 화면에 에러 문구 띄워주기 -> 다시 서버에 요청해주세요.
+                    Console.WriteLine($"실패: {res.Message}");
+                }
+            }
+        }
+
+        [RelayCommand]
         private void UpdateItemTypes()
         {
             Packet packet = new Packet
