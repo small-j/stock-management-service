@@ -31,7 +31,7 @@ namespace StockClient_WPF.ViewModels.Windows
 
             this._serverConnection.Send(packet);
             Packet result = this._serverConnection.Receive();
-            Console.WriteLine("check");
+            // TODO: client에서 갖고 있는 기능 목록과 비교.
         }
     }
 }

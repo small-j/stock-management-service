@@ -59,6 +59,7 @@ namespace StockClient_WPF.Services
             }
             catch (Exception ex)
             {
+                // TODO: ex 활용.
                 throw new DecoderFallbackException();
             }
         }
