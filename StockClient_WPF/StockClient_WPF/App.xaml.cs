@@ -38,8 +38,8 @@ namespace StockClient_WPF
                 services.AddSingleton<MainWindowViewModel>();
                 services.AddSingleton<Main>();
                 services.AddSingleton<MainViewModel>();
-                services.AddSingleton<ItemForm>();
-                services.AddSingleton<StockForm>();
+                services.AddTransient<ItemForm>();
+                services.AddTransient<StockForm>();
                 services.AddSingleton<ItemFormViewModel>();
                 services.AddSingleton<StockFormViewModel>();
             }).Build();
