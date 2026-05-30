@@ -9,7 +9,7 @@
         Title="ItemForm" Height="450" Width="300">
     <Grid Margin="10, 10, 10, 10">
         <StackPanel>
-            <ui:TextBlock Grid.Row="0" Margin="0, 0, 0, 10">
+            <ui:TextBlock Margin="0, 0, 0, 10">
                 <Run Text="Item Type" />
                 <Run Text="*" Foreground="OrangeRed"/>
             </ui:TextBlock>

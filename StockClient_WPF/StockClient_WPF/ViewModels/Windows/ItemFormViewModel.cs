@@ -31,11 +31,10 @@ namespace StockClient_WPF.ViewModels.Windows
 
             this.ItemTypes = new ObservableCollection<ItemTypeDto>();
 
-            UpdateItemTypes();
+            GetItemTypes();
         }
 
-        [RelayCommand]
-        private void UpdateItemTypes()
+        private void GetItemTypes()
         {
             Packet packet = new Packet
             {
