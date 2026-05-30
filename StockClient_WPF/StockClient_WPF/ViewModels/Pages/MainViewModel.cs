@@ -6,6 +6,7 @@ using StockClient_WPF.Views.Pages;
 using StockClient_WPF.Views.Windows;
 using StockServiceProtocol;
 using System.Collections.ObjectModel;
+using StockClient_WPF.Models;
 
 namespace StockClient_WPF.ViewModels.Pages
 {
@@ -14,7 +15,7 @@ namespace StockClient_WPF.ViewModels.Pages
         private IServerConnection<Packet, Packet> _serverConnection;
 
         [ObservableProperty]
-        private ObservableCollection<ResItemDto> _items;
+        private ObservableCollection<Item> _items;
 
         private Dictionary<int, string> _itemTypes;
 
@@ -25,10 +26,11 @@ namespace StockClient_WPF.ViewModels.Pages
         public MainViewModel(IServerConnection<Packet, Packet> serverConnection)
         {
             this._serverConnection = serverConnection;
-            this._items = new ObservableCollection<ResItemDto>();
+            this._items = new ObservableCollection<Item>();
 
-            UpdateItemTypes();
-            UpdateItems();
+            GetItemTypes();
+            GetItems();
+
         }
 
         [RelayCommand]
@@ -46,7 +48,7 @@ namespace StockClient_WPF.ViewModels.Pages
         }
 
         [RelayCommand]
-        private void UpdateItems()
+        private void GetItems()
         {
             Packet packet = new Packet
             {
@@ -62,8 +64,8 @@ namespace StockClient_WPF.ViewModels.Pages
                 GetItemsResponse res = resP.GetItemsRes;
                 if (res.Status && this._itemTypes != null)
                 {
-                    this.Items = new ObservableCollection<ResItemDto>(
-                        res.ResItemDto.Select(t => new ResItemDto() {
+                    this.Items = new ObservableCollection<Item>(
+                        res.ItemDto.Select(t => new Item() {
                            Id = t.Id,
                            Name = t.Name,
                            ItemType = this._itemTypes[t.ItemType],
@@ -113,7 +115,7 @@ namespace StockClient_WPF.ViewModels.Pages
         }
 
         [RelayCommand]
-        private void UpdateItemTypes()
+        private void GetItemTypes()
         {
             Packet packet = new Packet
             {

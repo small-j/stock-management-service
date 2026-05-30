@@ -179,7 +179,7 @@ namespace StockClient_WPF.Services
 
             for (int i = 0; i < _items.Count; i++)
             {
-                res.ResItemDto.Add(new ItemDto
+                res.ItemDto.Add(new ItemDto
                 {
                     Id = i,
                     Name = _items[i].Name,
