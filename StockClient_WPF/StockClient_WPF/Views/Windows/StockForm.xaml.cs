@@ -1,4 +1,5 @@
-﻿using System;
+﻿using StockClient_WPF.ViewModels.Windows;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Windows;
@@ -17,9 +18,16 @@ namespace StockClient_WPF.Views.Windows
     /// </summary>
     public partial class StockForm : Window
     {
-        public StockForm()
+        public StockFormViewModel ViewModel { get; }
+
+        public StockForm(StockFormViewModel viewModel)
         {
+            ViewModel = viewModel;
+            DataContext = this;
+
             InitializeComponent();
+
+            ViewModel.RequestClose += () => Close();
         }
     }
 }

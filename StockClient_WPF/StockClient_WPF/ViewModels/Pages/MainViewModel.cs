@@ -142,6 +142,7 @@ namespace StockClient_WPF.ViewModels.Pages
             }
         }
 
+        [RelayCommand]
         private void GetStocks()
         {
             Packet packet = new Packet
@@ -162,6 +163,7 @@ namespace StockClient_WPF.ViewModels.Pages
                         res.StockDto.Select(t => new Stock()
                         {
                             Id = t.Id,
+                            ItemName = Items.First(item => item.Id == t.Id).Name,
                             Count = t.Count,
                             ItemId = t.ItemId,
                         })

@@ -7,21 +7,31 @@
         xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
         mc:Ignorable="d"
         Title="StockForm" Height="450" Width="300">
-    <Grid>
+    <Grid Margin="10, 10, 10, 10">
         <StackPanel>
-            <ui:TextBlock Grid.Row="0" Margin="0, 0, 0, 10">
+            <ui:TextBlock Margin="0, 0, 0, 10">
                 <Run Text="Item" />
                 <Run Text="*" Foreground="OrangeRed"/>
             </ui:TextBlock>
-            <ComboBox Grid.Row="1" IsEditable="True" ItemsSource="{Binding ViewModel.Items}" Text="{Binding ViewModel.SelectedAdministrativeAgency, Mode=TwoWay}" Margin="0,0,0,10" />
+            <ComboBox 
+                IsEditable="False" 
+                ItemsSource="{Binding ViewModel.Items}" 
+                SelectedValue="{Binding ViewModel.SelectedItemId}" 
+                Margin="0,0,0,10" 
+                Foreground="Black"
+                BorderBrush="Black" 
+                BorderThickness="1" 
+                DisplayMemberPath="Name"
+                SelectedValuePath="Id"
+            />
 
             <ui:TextBlock Margin="0, 0, 0, 10">
                 <Run Text="Stock Count" />
                 <Run Text="*" Foreground="OrangeRed"/>
             </ui:TextBlock>
-            <ui:NumberBox Margin="0,0,0,10" Text="{Binding ViewModel.Count}" />
+            <ui:NumberBox Margin="0,0,0,10" Text="{Binding ViewModel.Count}" BorderBrush="Black" BorderThickness="1" Background="White" Foreground="Black" />
 
-            <ui:Button Grid.Row="14" Height="50" Margin="10,10,10,10" HorizontalAlignment="Stretch" Background="CadetBlue" Foreground="white" Content="Add" Command="{Binding ViewModel.AddCommand}"/>
+            <ui:Button Grid.Row="14" Height="50" HorizontalAlignment="Stretch" Background="CadetBlue" Foreground="white" Content="Add" Command="{Binding ViewModel.AddStockCommand}"/>
         </StackPanel>
 
     </Grid>

@@ -300,7 +300,7 @@ namespace StockClient_WPF.Services
                 Message = "success",
             };
 
-            for (int i = 0; i < _items.Count; i++)
+            for (int i = 0; i < _stocks.Count; i++)
             {
                 res.StockDto.Add(new StockDto
                 {
