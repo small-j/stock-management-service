@@ -9,6 +9,7 @@ enum PacketType {
 	GET_ITEM_TYPE = 1004;
 	ADD_STOCK = 2001;
 	REDUCE_STOCK = 2002;
+	GET_STOCKS = 2003;
 	GET_MENU = 3001;
 }
 
@@ -84,6 +85,15 @@ message ReduceStockResponse {
 	string message = 2;
 }
 
+message GetStocksRequest {
+}
+
+message GetStocksResponse {
+	bool status = 1;
+	string message = 2;
+	repeated StockDto stockDto = 3;
+}
+
 message GetItemTypesRequest {
 }
 
@@ -111,5 +121,7 @@ message Packet {
 		GetItemTypesResponse get_item_types_res = 13;
 		GetMenusRequest get_menus_req = 14;
 		GetMenusResponse get_menus_res = 15;
+		GetStocksRequest get_stocks_req = 16;
+		GetStocksResponse get_stocks_res = 17;
 	}
 }

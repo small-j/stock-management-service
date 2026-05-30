@@ -19,8 +19,8 @@ namespace StockClient_WPF.ViewModels.Pages
 
         private Dictionary<int, string> _itemTypes;
 
-        //[ObservableProperty]
-        //private ResStockDto? _stocks;
+        [ObservableProperty]
+        private ObservableCollection<Stock> _stocks;
 
 
         public MainViewModel(IServerConnection<Packet, Packet> serverConnection)
@@ -31,6 +31,7 @@ namespace StockClient_WPF.ViewModels.Pages
             GetItemTypes();
             GetItems();
 
+            GetStocks();
         }
 
         [RelayCommand]
@@ -141,9 +142,37 @@ namespace StockClient_WPF.ViewModels.Pages
             }
         }
 
-        private void UpdateStocks()
+        private void GetStocks()
         {
+            Packet packet = new Packet
+            {
+                Type = PacketType.GetStocks,
+                GetStocksReq = new GetStocksRequest()
+            };
 
+            this._serverConnection.Send(packet);
+            Packet resP = this._serverConnection.Receive(1024);
+
+            if (resP.Type == PacketType.GetStocks)
+            {
+                GetStocksResponse res = resP.GetStocksRes;
+                if (res.Status)
+                {
+                    this.Stocks = new ObservableCollection<Stock>(
+                        res.StockDto.Select(t => new Stock()
+                        {
+                            Id = t.Id,
+                            Count = t.Count,
+                            ItemId = t.ItemId,
+                        })
+                    );
+                }
+                else
+                {
+                    // null일 경우 화면에 에러 문구 띄워주기 -> 다시 서버에 요청해주세요.
+                    Console.WriteLine($"실패: {res.Message}");
+                }
+            }
         }
     }
 }

@@ -13,13 +13,24 @@ namespace StockClient_WPF.Services
         private List<ItemDto> _items = new List<ItemDto>();
         private List<StockDto> _stocks = new List<StockDto>();
 
+        private static int _gItemCnt = 0;
+        private static int _gStockCnt = 0;
+
         public void Init()
         {
+            _gItemCnt++;
             ItemDto itemDto = new ItemDto();
             itemDto.Id = 1;
             itemDto.Name = "test";
             itemDto.ItemType = 1;
             _items.Add(itemDto);
+
+            _gStockCnt++;
+            StockDto stockDto = new StockDto();
+            stockDto.Id = 1;
+            stockDto.Count = 5;
+            stockDto.ItemId = 1;
+            _stocks.Add(stockDto);
         }
 
         public void CreateConnection()
@@ -106,6 +117,13 @@ namespace StockClient_WPF.Services
                         ReduceStockRes = ReduceStock(req)
                     };
                     break;
+                case PacketType.GetStocks:
+                    result = new Packet
+                    {
+                        Type = PacketType.GetStocks,
+                        GetStocksRes = GetStocks()
+                    };
+                    break;
                 default:
                     break;
             }
@@ -121,16 +139,17 @@ namespace StockClient_WPF.Services
                 Message = "success",
             };
             res.Menus.Add("AddItem");
-            res.Menus.AddRange(new[] { "RemoveItem", "PrintItem", "GetItemType", "AddStock", "ReduceStock" });
+            res.Menus.AddRange(new[] { "RemoveItem", "GetItem", "GetItemType", "AddStock", "ReduceStock", "GetStocks" });
 
             return res;
         }
 
         private AddItemResponse AddItem(Packet packet)
         {
+            _gItemCnt++;
             _items.Add(new ItemDto
             {
-                //id = _items.Count() + 1,
+                Id = _gItemCnt,
                 Name = packet.AddItemReq.ItemDto.Name,
                 ItemType = packet.AddItemReq.ItemDto.ItemType
             });
@@ -181,7 +200,7 @@ namespace StockClient_WPF.Services
             {
                 res.ItemDto.Add(new ItemDto
                 {
-                    Id = i,
+                    Id = _items[i].Id,
                     Name = _items[i].Name,
                     ItemType = _items[i].ItemType
                 });
@@ -205,6 +224,7 @@ namespace StockClient_WPF.Services
 
         private AddStockResponse AddStock(Packet packet)
         {
+            _gStockCnt++;
             StockDto target = null;
             for (int i = 0; i < _stocks.Count(); i++)
             {
@@ -219,6 +239,7 @@ namespace StockClient_WPF.Services
             {
                 _stocks.Add(new StockDto
                 {
+                    Id = _gStockCnt,
                     ItemId = packet.AddStockReq.StockDto.ItemId,
                     Count = packet.AddStockReq.StockDto.Count
                 });
@@ -266,6 +287,27 @@ namespace StockClient_WPF.Services
             else
             {
                 target.Count -= packet.AddStockReq.StockDto.Count;
+            }
+
+            return res;
+        }
+
+        private GetStocksResponse GetStocks()
+        {
+            var res = new GetStocksResponse
+            {
+                Status = true,
+                Message = "success",
+            };
+
+            for (int i = 0; i < _items.Count; i++)
+            {
+                res.StockDto.Add(new StockDto
+                {
+                    Id = _stocks[i].Id,
+                    Count = _stocks[i].Count,
+                    ItemId = _stocks[i].ItemId
+                });
             }
 
             return res;
