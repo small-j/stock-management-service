@@ -42,7 +42,7 @@ namespace StockClient_WPF.ViewModels.Pages
         }
 
         [RelayCommand]
-        public void AddStock()
+        public void EditStock()
         {
             var stockFormWindow = App.Services.GetRequiredService<StockForm>();
             stockFormWindow.Show();

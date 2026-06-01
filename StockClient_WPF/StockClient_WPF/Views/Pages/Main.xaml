@@ -51,7 +51,7 @@
                     <ColumnDefinition Width="130"/>
                     <ColumnDefinition />
                 </Grid.ColumnDefinitions>
-                <ui:Button Grid.Column="0" Margin="0,0,0,10" Grid.Row="14" Height="35" Width="100" Background="CadetBlue" Foreground="white" Content="Add stock" Command="{Binding ViewModel.AddStockCommand}"/>
+                <ui:Button Grid.Column="0" Margin="0,0,0,10" Grid.Row="14" Height="35" Width="100" Background="CadetBlue" Foreground="white" Content="Edit stock" Command="{Binding ViewModel.EditStockCommand}"/>
                 <ui:Button Grid.Column="1" Margin="0,0,10,10" Grid.Row="14" Height="35" Width="70" Background="Black" Content="refresh" Command="{Binding ViewModel.GetStocksCommand}" />
             </Grid>
 

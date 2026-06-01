@@ -19,7 +19,7 @@ namespace StockClient_WPF.ViewModels.Windows
         private ObservableCollection<Item> _items;
 
         [ObservableProperty]
-        private uint _count;
+        private long _count;
 
         [ObservableProperty]
         private int _selectedItemId;
@@ -70,7 +70,25 @@ namespace StockClient_WPF.ViewModels.Windows
         }
 
         [RelayCommand]
-        public void AddStock()
+        public void EditStock()
+        {
+            if (Count == 0 || Count < Stock.MIN_STOCK_SIZE || Stock.MAX_STOCK_SIZE < Count)
+            {
+                // TODO: 오류 메시지 띄우기.
+                return;
+            }
+
+            if (Count > 0)
+            {
+                AddStock((uint)Count);
+            }
+            else
+            {
+                ReduceStock((uint)-Count);
+            }
+        }
+
+        public void AddStock(uint count)
         {
             Packet packet = new Packet
             {
@@ -80,7 +98,7 @@ namespace StockClient_WPF.ViewModels.Windows
                     StockDto = new StockDto()
                     {
                         ItemId = SelectedItemId,
-                        Count = Count,
+                        Count = count,
                     }
                 }
             };
@@ -91,6 +109,49 @@ namespace StockClient_WPF.ViewModels.Windows
             if (resP.Type == PacketType.AddStock)
             {
                 AddStockResponse res = resP.AddStockRes;
+                if (res.Status)
+                {
+                    SelectedItemId = -1;
+                    Count = 0;
+                    RequestClose?.Invoke();
+                    // TODO: 부모 window에 items 값을 전달한다. (재호출해서 업데이트 된 결과를 받아야 함.)
+                    // 즉, 추후에는 업데이트 된 결과가 올때까지 기다린다?
+                }
+                else
+                {
+                    // null일 경우 화면에 에러 문구 띄워주기 -> 다시 서버에 요청해주세요.
+                    Console.WriteLine($"실패: {res.Message}");
+                }
+            }
+        }
+
+        public void ReduceStock(uint count)
+        {
+            if (Items.FirstOrDefault(t => t.Id == SelectedItemId) == null)
+            {
+                // TODO : print error message.
+                return;
+            }
+
+            Packet packet = new Packet
+            {
+                Type = PacketType.ReduceStock,
+                ReduceStockReq = new ReduceStockRequest()
+                {
+                    StockDto = new StockDto()
+                    {
+                        ItemId = SelectedItemId,
+                        Count = count,
+                    }
+                }
+            };
+
+            this._serverConnection.Send(packet);
+            Packet resP = this._serverConnection.Receive(1024);
+
+            if (resP.Type == PacketType.ReduceStock)
+            {
+                ReduceStockResponse res = resP.ReduceStockRes;
                 if (res.Status)
                 {
                     SelectedItemId = -1;

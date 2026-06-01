@@ -31,7 +31,7 @@
             </ui:TextBlock>
             <ui:NumberBox Margin="0,0,0,10" Text="{Binding ViewModel.Count}" BorderBrush="Black" BorderThickness="1" Background="White" Foreground="Black" />
 
-            <ui:Button Grid.Row="14" Height="50" HorizontalAlignment="Stretch" Background="CadetBlue" Foreground="white" Content="Add" Command="{Binding ViewModel.AddStockCommand}"/>
+            <ui:Button Grid.Row="14" Height="50" HorizontalAlignment="Stretch" Background="CadetBlue" Foreground="white" Content="Add" Command="{Binding ViewModel.EditStockCommand}"/>
         </StackPanel>
 
     </Grid>
