@@ -269,7 +269,7 @@ namespace StockClient_WPF.Services
 
             for (int i = 0; i < _stocks.Count(); i++)
             {
-                if (_stocks[i].ItemId == packet.AddStockReq.StockDto.ItemId)
+                if (_stocks[i].ItemId == packet.ReduceStockReq.StockDto.ItemId)
                 {
                     target = _stocks[i];
                     break;
@@ -286,7 +286,7 @@ namespace StockClient_WPF.Services
             }
             else
             {
-                target.Count -= packet.AddStockReq.StockDto.Count;
+                target.Count -= packet.ReduceStockReq.StockDto.Count;
             }
 
             return res;
