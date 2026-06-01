@@ -2,31 +2,36 @@
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.DependencyInjection;
 using StockClient_WPF.Interfaces;
+using StockClient_WPF.Models;
 using StockClient_WPF.Views.Pages;
 using StockClient_WPF.Views.Windows;
 using StockServiceProtocol;
 using System.Collections.ObjectModel;
-using StockClient_WPF.Models;
+using System.Xml.Linq;
 
 namespace StockClient_WPF.ViewModels.Pages
 {
     public partial class MainViewModel : ObservableObject
     {
-        private IServerConnection<Packet, Packet> _serverConnection;
+        private IItemApiService _itemApiService;
+        private IStockApiService _stockApiService;
 
         [ObservableProperty]
         private ObservableCollection<Item> _items;
 
-        private Dictionary<int, string> _itemTypes;
+        private Dictionary<int, string>? _itemTypes;
 
         [ObservableProperty]
         private ObservableCollection<Stock> _stocks;
 
 
-        public MainViewModel(IServerConnection<Packet, Packet> serverConnection)
+        public MainViewModel(IItemApiService itemApiService, IStockApiService stockApiService)
         {
-            this._serverConnection = serverConnection;
-            this._items = new ObservableCollection<Item>();
+            _itemApiService = itemApiService;
+            _stockApiService = stockApiService;
+
+            this.Items = new ObservableCollection<Item>();
+            this.Stocks = new ObservableCollection<Stock>();
 
             GetItemTypes();
             GetItems();
@@ -49,131 +54,70 @@ namespace StockClient_WPF.ViewModels.Pages
         }
 
         [RelayCommand]
-        private void GetItems()
+        private async Task GetItems()
         {
-            Packet packet = new Packet
+            if (this._itemTypes == null)
             {
-                Type = PacketType.GetItems,
-                GetItemsReq = new GetItemsRequest()
-            };
+                // TODO: 에러문 출력.
+                return;
+            }
 
-            this._serverConnection.Send(packet);
-            Packet resP = this._serverConnection.Receive(1024);
+            // call api.
+            List<Item> res = await this._itemApiService.GetItems();
 
-            if (resP.Type == PacketType.GetItems)
+            this.Items = new ObservableCollection<Item>();
+
+            foreach (var item in res)
             {
-                GetItemsResponse res = resP.GetItemsRes;
-                if (res.Status && this._itemTypes != null)
-                {
-                    this.Items = new ObservableCollection<Item>(
-                        res.ItemDto.Select(t => new Item() {
-                           Id = t.Id,
-                           Name = t.Name,
-                           ItemType = this._itemTypes[t.ItemType],
-                        })
-                    );
-                }
-                else
-                {
-                    // null일 경우 화면에 에러 문구 띄워주기 -> 다시 서버에 요청해주세요.
-                    Console.WriteLine($"실패: {res.Message}");
-                }
+                item.ItemTypeName = this._itemTypes[item.ItemType];
+                this.Items.Add(item);
             }
         }
 
         [RelayCommand]
-        private void DeleteItem(int id)
+        private async Task DeleteItem(int id)
         {
-            Packet packet = new Packet
+            // call api.
+            bool res = await this._itemApiService.RemoveItem(id);
+           
+            if (res == true)
             {
-                Type = PacketType.RemoveItem,
-                RemoveItemReq = new RemoveItemRequest()
+                var item = this.Items.FirstOrDefault(item => item.Id == id);
+                if (item != null)
                 {
-                    ItemId = id
+                    this.Items.Remove(item);
                 }
-            };
-
-            this._serverConnection.Send(packet);
-            Packet resP = this._serverConnection.Receive(1024);
-
-            if (resP.Type == PacketType.RemoveItem)
+            }
+            else
             {
-                RemoveItemResponse res = resP.RemoveItemRes;
-                if (res.Status)
-                {
-                    var item = this.Items.FirstOrDefault(item => item.Id == id);
-                    if (item != null)
-                    {
-                        this.Items.Remove(item);
-                    }
-                }
-                else
-                {
-                    // null일 경우 화면에 에러 문구 띄워주기 -> 다시 서버에 요청해주세요.
-                    Console.WriteLine($"실패: {res.Message}");
-                }
+                // TODO
             }
         }
 
         [RelayCommand]
-        private void GetItemTypes()
+        private async Task GetItemTypes()
         {
-            Packet packet = new Packet
-            {
-                Type = PacketType.GetItemType,
-                GetItemTypesReq = new GetItemTypesRequest()
-            };
+            // call api.
+            List<ItemType> res = await this._itemApiService.GetItemTypes();
 
-            this._serverConnection.Send(packet);
-            Packet resP = this._serverConnection.Receive(1024);
-
-            if (resP.Type == PacketType.GetItemType)
-            {
-                GetItemTypesResponse res = resP.GetItemTypesRes;
-                if (res.Status)
-                {
-                    this._itemTypes = res.ItemTypes.ToDictionary(t => t.Id, t => t.Name);
-                }
-                else
-                {
-                    // null일 경우 화면에 에러 문구 띄워주기 -> 다시 서버에 요청해주세요.
-                    Console.WriteLine($"실패: {res.Message}");
-                }
-            }
+            this._itemTypes = res.ToDictionary(t => t.Id, t => t.Name);
         }
 
         [RelayCommand]
-        private void GetStocks()
+        private async Task GetStocks()
         {
-            Packet packet = new Packet
-            {
-                Type = PacketType.GetStocks,
-                GetStocksReq = new GetStocksRequest()
-            };
+            // call api.
+            List<Stock> res = await this._stockApiService.GetStocks();
 
-            this._serverConnection.Send(packet);
-            Packet resP = this._serverConnection.Receive(1024);
-
-            if (resP.Type == PacketType.GetStocks)
+            this.Stocks = new ObservableCollection<Stock>();
+            foreach (var stock in res)
             {
-                GetStocksResponse res = resP.GetStocksRes;
-                if (res.Status)
-                {
-                    this.Stocks = new ObservableCollection<Stock>(
-                        res.StockDto.Select(t => new Stock()
-                        {
-                            Id = t.Id,
-                            ItemName = Items.First(item => item.Id == t.Id).Name,
-                            Count = t.Count,
-                            ItemId = t.ItemId,
-                        })
-                    );
-                }
-                else
-                {
-                    // null일 경우 화면에 에러 문구 띄워주기 -> 다시 서버에 요청해주세요.
-                    Console.WriteLine($"실패: {res.Message}");
-                }
+                Item? stockItem = Items.FirstOrDefault(item => item.Id == stock.ItemId);
+
+                if (stockItem == null) continue;
+
+                stock.ItemName = stockItem.Name;
+                Stocks.Add(stock);
             }
         }
     }

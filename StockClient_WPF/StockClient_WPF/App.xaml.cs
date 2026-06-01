@@ -42,6 +42,8 @@ namespace StockClient_WPF
                 services.AddTransient<StockForm>();
                 services.AddSingleton<ItemFormViewModel>();
                 services.AddSingleton<StockFormViewModel>();
+                services.AddSingleton<IItemApiService, ItemApiService>();
+                services.AddSingleton<IStockApiService, StockApiService>();
             }).Build();
 
         /// <summary>

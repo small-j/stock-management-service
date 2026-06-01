@@ -13,7 +13,8 @@ namespace StockClient_WPF.ViewModels.Windows
 {
     public partial class StockFormViewModel : ObservableObject
     {
-        private IServerConnection<Packet, Packet> _serverConnection;
+        private IItemApiService _itemApiService;
+        private IStockApiService _stockApiService;
 
         [ObservableProperty]
         private ObservableCollection<Item> _items;
@@ -27,45 +28,25 @@ namespace StockClient_WPF.ViewModels.Windows
         public event Action RequestClose;
 
 
-        public StockFormViewModel(IServerConnection<Packet, Packet> serverConnection)
+        public StockFormViewModel(IItemApiService itemApiService, IStockApiService stockApiService)
         {
-            this._serverConnection = serverConnection;
+            this._itemApiService = itemApiService;
+            this._stockApiService = stockApiService;
 
             this.Items = new ObservableCollection<Item>();
 
             GetItems();
         }
 
-        private void GetItems()
+        private async Task GetItems()
         {
-            Packet packet = new Packet
-            {
-                Type = PacketType.GetItems,
-                GetItemsReq = new GetItemsRequest()
-            };
+            // call api.
+            List<Item> res = await this._itemApiService.GetItems();
 
-            this._serverConnection.Send(packet);
-            Packet resP = this._serverConnection.Receive(1024);
-
-            if (resP.Type == PacketType.GetItems)
+            this.Items = new ObservableCollection<Item>();
+            foreach (Item item in res)
             {
-                GetItemsResponse res = resP.GetItemsRes;
-                if (res.Status)
-                {
-                    this.Items = new ObservableCollection<Item>(
-                        res.ItemDto.Select(t => new Item()
-                        {
-                            Id = t.Id,
-                            Name = t.Name,
-                            ItemType = "",
-                        })
-                    );
-                }
-                else
-                {
-                    // null일 경우 화면에 에러 문구 띄워주기 -> 다시 서버에 요청해주세요.
-                    Console.WriteLine($"실패: {res.Message}");
-                }
+                this.Items.Add(item);
             }
         }
 
@@ -74,7 +55,13 @@ namespace StockClient_WPF.ViewModels.Windows
         {
             if (Count == 0 || Count < Stock.MIN_STOCK_SIZE || Stock.MAX_STOCK_SIZE < Count)
             {
-                // TODO: 오류 메시지 띄우기.
+                Console.WriteLine("입력 값이 유효하지 않습니다.");
+                return;
+            }
+
+            if (Items.FirstOrDefault(t => t.Id == SelectedItemId) == null)
+            {
+                Console.WriteLine("선택된 item 값이 유효하지 않습니다.");
                 return;
             }
 
@@ -88,83 +75,43 @@ namespace StockClient_WPF.ViewModels.Windows
             }
         }
 
-        public void AddStock(uint count)
+        public async Task AddStock(uint count)
         {
-            Packet packet = new Packet
-            {
-                Type = PacketType.AddStock,
-                AddStockReq = new AddStockRequest()
-                {
-                    StockDto = new StockDto()
-                    {
-                        ItemId = SelectedItemId,
-                        Count = count,
-                    }
-                }
-            };
+            // call api.
+            bool res = await this._stockApiService.AddStock(SelectedItemId, count);
 
-            this._serverConnection.Send(packet);
-            Packet resP = this._serverConnection.Receive(1024);
+            SelectedItemId = -1;
+            Count = 0;
 
-            if (resP.Type == PacketType.AddStock)
+            if (res == false)
             {
-                AddStockResponse res = resP.AddStockRes;
-                if (res.Status)
-                {
-                    SelectedItemId = -1;
-                    Count = 0;
-                    RequestClose?.Invoke();
-                    // TODO: 부모 window에 items 값을 전달한다. (재호출해서 업데이트 된 결과를 받아야 함.)
-                    // 즉, 추후에는 업데이트 된 결과가 올때까지 기다린다?
-                }
-                else
-                {
-                    // null일 경우 화면에 에러 문구 띄워주기 -> 다시 서버에 요청해주세요.
-                    Console.WriteLine($"실패: {res.Message}");
-                }
+                // TODO
+            }
+            else
+            {
+                RequestClose?.Invoke();
+                // TODO: 부모 window에 items 값을 전달한다. (재호출해서 업데이트 된 결과를 받아야 함.)
+                // 즉, 추후에는 업데이트 된 결과가 올때까지 기다린다?
             }
         }
 
-        public void ReduceStock(uint count)
+        public async Task ReduceStock(uint count)
         {
-            if (Items.FirstOrDefault(t => t.Id == SelectedItemId) == null)
+            // call api.
+            bool res = await this._stockApiService.ReduceStock(SelectedItemId, count);
+
+            SelectedItemId = -1;
+            Count = 0;
+
+            if (res == false)
             {
-                // TODO : print error message.
-                return;
+                // TODO
             }
-
-            Packet packet = new Packet
+            else
             {
-                Type = PacketType.ReduceStock,
-                ReduceStockReq = new ReduceStockRequest()
-                {
-                    StockDto = new StockDto()
-                    {
-                        ItemId = SelectedItemId,
-                        Count = count,
-                    }
-                }
-            };
-
-            this._serverConnection.Send(packet);
-            Packet resP = this._serverConnection.Receive(1024);
-
-            if (resP.Type == PacketType.ReduceStock)
-            {
-                ReduceStockResponse res = resP.ReduceStockRes;
-                if (res.Status)
-                {
-                    SelectedItemId = -1;
-                    Count = 0;
-                    RequestClose?.Invoke();
-                    // TODO: 부모 window에 items 값을 전달한다. (재호출해서 업데이트 된 결과를 받아야 함.)
-                    // 즉, 추후에는 업데이트 된 결과가 올때까지 기다린다?
-                }
-                else
-                {
-                    // null일 경우 화면에 에러 문구 띄워주기 -> 다시 서버에 요청해주세요.
-                    Console.WriteLine($"실패: {res.Message}");
-                }
+                RequestClose?.Invoke();
+                // TODO: 부모 window에 items 값을 전달한다. (재호출해서 업데이트 된 결과를 받아야 함.)
+                // 즉, 추후에는 업데이트 된 결과가 올때까지 기다린다?
             }
         }
     }

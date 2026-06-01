@@ -4,11 +4,9 @@ using System.Text;
 
 namespace StockClient_WPF.Models
 {
-    public class Item
+    public class ItemType
     {
         public int Id { get; set; }
         public string Name { get; set; }
-        public int ItemType { get; set; }
-        public string ItemTypeName { get; set; }
     }
 }
